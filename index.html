@@ -9,19 +9,29 @@
             font-family: sans-serif;
             background-color: #f4f7f9;
             margin: 0;
-            padding: 0;
+            padding: 20px;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
-        table {
-            border-collapse: separate;
-            border-spacing: 10px;
-            margin: 50px auto;
+
+        .container {
+            width: 100%;
+            max-width: 800px;
         }
-        td {
+        
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin: 20px 0;
+        }
+        
+        .cell {
             border: 2px solid #ccc;
-            padding: 25px;
+            padding: 20px;
             text-align: center;
-            width: 140px;
-            height: 70px;
             position: relative;
             cursor: pointer;
             background-color: white;
@@ -29,6 +39,11 @@
             border-radius: 8px;
             font-weight: bold;
             color: #333;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 80px;
+            box-sizing: border-box;
         }
         
         .transparent-cell {
@@ -63,6 +78,7 @@
             position: absolute;
             top: 100%;
             left: 0;
+            right: 0;
             background: white;
             border: 1px solid #ccc;
             border-radius: 5px;
@@ -117,13 +133,10 @@
         .option-with-checkbox { display: flex; justify-content: space-between; width: 100%; align-items: center; }
         .option-text { flex-grow: 1; text-align: left; }
         
-        .instruction {
+        .instruction, .timer-display, .notification {
             position: fixed;
-            top: 20px;
             left: 50%;
             transform: translateX(-50%);
-            background-color: #2196F3;
-            color: white;
             padding: 15px 30px;
             border-radius: 8px;
             font-weight: bold;
@@ -131,36 +144,9 @@
             z-index: 100;
             display: none;
         }
-        
-        .timer-display {
-            position: fixed;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            background-color: #ff9800;
-            color: white;
-            padding: 10px 20px;
-            border-radius: 8px;
-            font-weight: bold;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-            z-index: 100;
-            display: none;
-        }
-
-        .notification {
-            position: fixed;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            background-color: #4CAF50;
-            color: white;
-            padding: 15px 30px;
-            border-radius: 8px;
-            font-weight: bold;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-            z-index: 100;
-            display: none;
-        }
+        .instruction { top: 20px; background-color: #2196F3; color: white; }
+        .timer-display { bottom: 20px; background-color: #ff9800; color: white; }
+        .notification { bottom: 20px; background-color: #4CAF50; color: white; }
         
         .results-container {
             position: fixed;
@@ -226,6 +212,64 @@
             margin-top: 10px;
             text-align: right;
         }
+
+        /* Responsive Styles */
+        @media (min-width: 1024px) {
+            .grid {
+                grid-template-rows: repeat(4, 1fr);
+            }
+        }
+        
+        @media (max-width: 1023px) {
+            body {
+                padding: 10px;
+            }
+            .grid {
+                gap: 5px;
+            }
+            .cell {
+                min-height: 60px;
+                padding: 10px;
+            }
+            button {
+                padding: 10px 15px;
+            }
+        }
+        
+        @media (max-width: 767px) {
+            body {
+                padding: 5px;
+            }
+            .grid {
+                grid-template-columns: 1fr;
+                gap: 5px;
+            }
+            .cell {
+                min-height: 50px;
+            }
+            .transparent-cell {
+                display: none;
+            }
+            .dropdown {
+                position: static;
+                margin-top: 5px;
+            }
+            .instruction, .timer-display, .notification {
+                width: 90%;
+                left: 50%;
+                transform: translateX(-50%);
+                text-align: center;
+                box-sizing: border-box;
+            }
+            .results-container {
+                padding: 10px;
+                max-height: 60vh;
+            }
+            .results-table th, .results-table td {
+                padding: 8px;
+                font-size: 12px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -234,9 +278,9 @@
     <div id="timer-display" class="timer-display"></div>
     <div id="notification" class="notification">Tâche terminée avec succès ! ✅</div>
 
-    <table>
-        <tr>
-            <td id="a1-cell" class="inactive-cell" onclick="handleCellClick(this)">
+    <div class="container">
+        <div class="grid">
+            <div id="a1-cell" class="cell inactive-cell" onclick="handleCellClick(this)">
                 <span class="cell-value">Locale</span>
                 <div class="dropdown" id="a1-dropdown">
                     <div onclick="chooseValue(this)">Locale</div>
@@ -251,23 +295,21 @@
                     <div onclick="chooseValue(this)">P9</div>
                     <div onclick="chooseValue(this)">P10</div>
                 </div>
-            </td>
-            <td class="transparent-cell"></td>
-            <td class="transparent-cell"></td>
-            <td id="d1-cell" onclick="handleCellClick(this)">
+            </div>
+            <div class="cell transparent-cell"></div>
+            <div class="cell transparent-cell"></div>
+            <div id="d1-cell" class="cell" onclick="handleCellClick(this)">
                 <span class="cell-value">Choisir</span>
                 <div class="dropdown">
                     <div onclick="chooseValue(this, 'A')">Anniva</div>
                     <div onclick="chooseValue(this, 'T')">Tinah</div>
                 </div>
-            </td>
-        </tr>
-        <tr>
-            <td id="a2-cell" class="inactive-cell">
+            </div>
+            <div id="a2-cell" class="cell inactive-cell">
                 <button class="btn-debut" onclick="startTask()">Début du tache</button>
-            </td>
-            <td class="transparent-cell"></td>
-            <td id="c2-cell" class="inactive-cell" onclick="handleCellClick(this)">
+            </div>
+            <div class="cell transparent-cell"></div>
+            <div id="c2-cell" class="cell inactive-cell" onclick="handleCellClick(this)">
                 <span class="cell-value">C2</span>
                 <div class="dropdown">
                     <div><div class="option-with-checkbox"><span class="option-text" id="chambre-text">Chambre</span><div class="checkbox-container"><div class="checkbox-item"><input type="checkbox" id="chambre-vert" onchange="updateTextColor('chambre', 'green')"><label for="chambre-vert">V</label></div><div class="checkbox-item"><input type="checkbox" id="chambre-rouge" onchange="updateTextColor('chambre', 'red')"><label for="chambre-rouge">R</label></div></div></div></div>
@@ -275,30 +317,26 @@
                     <div><div class="option-with-checkbox"><span class="option-text" id="terrasse-text">Terrasse</span><div class="checkbox-container"><div class="checkbox-item"><input type="checkbox" id="terrasse-vert" onchange="updateTextColor('terrasse', 'green')"><label for="terrasse-vert">V</label></div><div class="checkbox-item"><input type="checkbox" id="terrasse-rouge" onchange="updateTextColor('terrasse', 'red')"><label for="terrasse-rouge">R</label></div></div></div></div>
                     <div><div class="option-with-checkbox"><span class="option-text" id="autre-text">Autre</span><div class="checkbox-container"><div class="checkbox-item"><input type="checkbox" id="autre-vert" onchange="updateTextColor('autre', 'green')"><label for="autre-vert">V</label></div><div class="checkbox-item"><input type="checkbox" id="autre-rouge" onchange="updateTextColor('autre', 'red')"><label for="autre-rouge">R</label></div></div></div></div>
                 </div>
-            </td>
-            <td class="transparent-cell"></td>
-        </tr>
-        <tr>
-            <td id="a3-cell" class="inactive-cell">
+            </div>
+            <div class="cell transparent-cell"></div>
+            <div id="a3-cell" class="cell inactive-cell">
                 <button class="btn-fin" onclick="endTask()">Fin du tache</button>
-            </td>
-            <td class="transparent-cell"></td>
-            <td id="c3-cell" class="inactive-cell" onclick="handleCellClick(this)">
+            </div>
+            <div class="cell transparent-cell"></div>
+            <div id="c3-cell" class="cell inactive-cell" onclick="handleCellClick(this)">
                 <span class="cell-value">C3</span>
                 <div class="dropdown">
                     <div><div class="option-with-checkbox"><span class="option-text" id="personne-text">Personne a controlé</span><div class="checkbox-container"><div class="checkbox-item"><input type="checkbox" id="personne-checkbox" onchange="updateC3TextColor('personne')"></div></div></div></div>
                     <div><div class="option-with-checkbox"><span class="option-text" id="xylophase-text">Xylophase</span><div class="checkbox-container"><div class="checkbox-item"><input type="checkbox" id="xylophase-checkbox" onchange="updateC3TextColor('xylophase')"></div></div></div></div>
                 </div>
-            </td>
-            <td class="transparent-cell"></td>
-        </tr>
-        <tr>
-            <td id="a4-cell" class="inactive-cell" onclick="handleCellClick(this)"><span class="cell-value">A4</span><div class="dropdown"><div onclick="chooseValue(this)">Vide</div><div onclick="chooseValue(this)">1</div><div onclick="chooseValue(this)">2</div><div onclick="chooseValue(this)">3</div></div></td>
-            <td id="b4-cell" class="inactive-cell" onclick="handleCellClick(this)"><span class="cell-value">B4</span><div class="dropdown"><div onclick="chooseValue(this)">Vide</div><div onclick="chooseValue(this)">1</div><div onclick="chooseValue(this)">2</div><div onclick="chooseValue(this)">3</div></div></td>
-            <td id="c4-cell" class="inactive-cell" onclick="handleCellClick(this)"><span class="cell-value">C4</span><div class="dropdown"><div onclick="chooseValue(this)">Vide</div><div onclick="chooseValue(this)">1</div><div onclick="chooseValue(this)">2</div><div onclick="chooseValue(this)">3</div></div></td>
-            <td id="d4-cell" class="inactive-cell" onclick="handleCellClick(this)"><span class="cell-value">D4</span><div class="dropdown"><div onclick="chooseValue(this)">Vide</div><div onclick="chooseValue(this)">1</div><div onclick="chooseValue(this)">2</div><div onclick="chooseValue(this)">3</div></div></td>
-        </tr>
-    </table>
+            </div>
+            <div class="cell transparent-cell"></div>
+            <div id="a4-cell" class="cell inactive-cell" onclick="handleCellClick(this)"><span class="cell-value">A4</span><div class="dropdown"><div onclick="chooseValue(this)">Vide</div><div onclick="chooseValue(this)">1</div><div onclick="chooseValue(this)">2</div><div onclick="chooseValue(this)">3</div></div></div>
+            <div id="b4-cell" class="cell inactive-cell" onclick="handleCellClick(this)"><span class="cell-value">B4</span><div class="dropdown"><div onclick="chooseValue(this)">Vide</div><div onclick="chooseValue(this)">1</div><div onclick="chooseValue(this)">2</div><div onclick="chooseValue(this)">3</div></div></div>
+            <div id="c4-cell" class="cell inactive-cell" onclick="handleCellClick(this)"><span class="cell-value">C4</span><div class="dropdown"><div onclick="chooseValue(this)">Vide</div><div onclick="chooseValue(this)">1</div><div onclick="chooseValue(this)">2</div><div onclick="chooseValue(this)">3</div></div></div>
+            <div id="d4-cell" class="cell inactive-cell" onclick="handleCellClick(this)"><span class="cell-value">D4</span><div class="dropdown"><div onclick="chooseValue(this)">Vide</div><div onclick="chooseValue(this)">1</div><div onclick="chooseValue(this)">2</div><div onclick="chooseValue(this)">3</div></div></div>
+        </div>
+    </div>
 
     <div id="results-container" class="results-container">
         <div class="results-header">
@@ -393,7 +431,6 @@
             showNotification('Tâche terminée avec succès ! ✅');
             displayResults();
             
-            // Réinitialisation complète
             workflowState = 0;
             currentCellIndex = 0;
             c2CompletedOptions.clear();
@@ -523,37 +560,37 @@
             }
 
             switch(workflowState) {
-                case 0: // D1
+                case 0:
                     document.getElementById('d1-cell').classList.remove('inactive-cell');
                     document.getElementById('d1-cell').classList.add('active-cell');
                     instructionDiv.textContent = "Commencez par sélectionner une valeur dans D1 (Choisir)";
                     break;
-                case 1: // A2 (Début)
+                case 1:
                     document.getElementById('a2-cell').classList.remove('inactive-cell');
                     document.getElementById('a2-cell').classList.add('active-cell');
                     instructionDiv.textContent = "Cliquez sur 'Début du tache'";
                     break;
-                case 2: // A1
+                case 2:
                     checkA1DisabledState();
                     document.getElementById('a1-cell').classList.remove('inactive-cell');
                     document.getElementById('a1-cell').classList.add('active-cell');
                     instructionDiv.textContent = "Sélectionnez une valeur dans A1 (Locale)";
                     break;
-                case 3: // C2
+                case 3:
                     document.getElementById('c2-cell').classList.remove('inactive-cell');
                     document.getElementById('c2-cell').classList.add('active-cell');
                     instructionDiv.textContent = "Faites un choix (Vert/Rouge) pour chaque option dans C2";
                     break;
-                case 4: // C3
+                case 4:
                     document.getElementById('c3-cell').classList.remove('inactive-cell');
                     document.getElementById('c3-cell').classList.add('active-cell');
                     instructionDiv.textContent = "Faites un choix dans C3";
                     break;
-                case 5: // A4/B4/C4/D4
+                case 5:
                     currentCellIndex = 0;
                     activateSingleWorkflowCell();
                     break;
-                case 6: // A3 (Fin)
+                case 6:
                     document.getElementById('a3-cell').classList.remove('inactive-cell');
                     document.getElementById('a3-cell').classList.add('active-cell');
                     instructionDiv.textContent = "Cliquez sur 'Fin du tache' pour terminer";
@@ -582,7 +619,7 @@
         }
 
         function deactivateAllCells() {
-            const cells = document.querySelectorAll('td:not(.transparent-cell)');
+            const cells = document.querySelectorAll('.cell:not(.transparent-cell)');
             cells.forEach(cell => {
                 cell.classList.remove('active-cell', 'selected-cell');
                 cell.classList.add('inactive-cell');
@@ -602,7 +639,7 @@
         function chooseValue(optionDiv, specialValue = null) {
             if (optionDiv.classList.contains('disabled')) return;
 
-            let cell = optionDiv.closest("td");
+            let cell = optionDiv.closest(".cell");
             let valueDisplay = cell.querySelector(".cell-value");
             if (!valueDisplay) return;
 
@@ -735,14 +772,12 @@
             document.querySelector('#c3-cell .cell-value').textContent = 'C3';
         }
 
-        // Fermer les dropdowns si on clique ailleurs
         document.addEventListener("click", function(e) {
-            if (!e.target.closest("td") || e.target.closest(".dropdown")) {
+            if (!e.target.closest(".cell") || e.target.closest(".dropdown")) {
                 document.querySelectorAll(".dropdown").forEach(d => d.style.display = "none");
             }
         });
         
-        // Fermer le conteneur des résultats avec la touche Échap
         document.addEventListener("keydown", function(e) {
             if (e.key === "Escape") {
                 closeResults();
