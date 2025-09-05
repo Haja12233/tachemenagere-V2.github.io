@@ -74,6 +74,19 @@
             border-color: #1976D2;
         }
         
+        /* Style pour la zone facultative en vert */
+        .facultative-zone {
+            background-color: #c8e6c9 !important;
+            border-color: #4caf50 !important;
+            box-shadow: 0 0 15px rgba(76, 175, 80, 0.5) !important;
+        }
+        
+        /* Style pour A3 en bleu */
+        #a3-cell.active-cell {
+            background-color: #bbdefb;
+            border-color: #1976D2;
+        }
+        
         .dropdown {
             position: absolute;
             top: 100%;
@@ -116,8 +129,8 @@
         }
         .btn-debut { background-color: #28a745; }
         .btn-debut:hover { background-color: #218838; }
-        .btn-fin { background-color: #dc3545; }
-        .btn-fin:hover { background-color: #c82333; }
+        .btn-fin { background-color: #2196F3; }
+        .btn-fin:hover { background-color: #1976D2; }
         
         .checkbox-container { display: flex; gap: 10px; }
         .checkbox-item { display: flex; align-items: center; gap: 5px; }
@@ -145,8 +158,10 @@
             display: none;
         }
         .instruction { top: 20px; background-color: #2196F3; color: white; }
-        .timer-display { bottom: 20px; background-color: #ff9800; color: white; }
-        .notification { bottom: 20px; background-color: #4CAF50; color: white; }
+        .timer-display { bottom: 20px; background-color: #4caf50; color: white; }
+        /* Notifications spécifiques */
+        .notification.green { background-color: #4CAF50; color: white; }
+        .notification.red { background-color: #F44336; color: white; }
         
         .results-container {
             position: fixed;
@@ -212,7 +227,7 @@
             margin-top: 10px;
             text-align: right;
         }
-
+        
         /* Responsive Styles */
         @media (min-width: 1024px) {
             .grid {
@@ -276,7 +291,7 @@
 
     <div id="instruction" class="instruction"></div>
     <div id="timer-display" class="timer-display"></div>
-    <div id="notification" class="notification">Tâche terminée avec succès ! ✅</div>
+    <div id="notification" class="notification"></div>
 
     <div class="container">
         <div class="grid">
@@ -344,10 +359,8 @@
             <button class="close-results" onclick="closeResults()">×</button>
         </div>
         <table class="results-table" id="results-table">
-            <thead id="results-header-row">
-                </thead>
-            <tbody id="results-body">
-                </tbody>
+            <thead id="results-header-row"></thead>
+            <tbody id="results-body"></tbody>
         </table>
         <div class="timestamp" id="results-timestamp"></div>
     </div>
@@ -369,12 +382,16 @@
         const D1_STORAGE_KEY = 'd1_default_value';
         const D1_EXPIRY_KEY = 'd1_expiry_time';
         const A1_DISABLED_OPTIONS_KEY = 'a1_disabled_options';
+        const TASKS_STORAGE_KEY = 'completed_tasks'; // Nouvelle clé de stockage
         const EIGHT_HOURS = 8 * 60 * 60 * 1000;
+        let previousDay = new Date().getDate(); // Variable pour la détection du changement de jour
 
         // --- INITIALISATION ---
         document.addEventListener('DOMContentLoaded', () => {
             loadInitialState();
             activateNextStep(true);
+            checkDayChange(); // Vérifie le changement de jour au chargement
+            displayAllTasks(); // Affiche toutes les tâches au chargement
         });
 
         function loadInitialState() {
@@ -388,6 +405,20 @@
             }
             
             checkA1DisabledState();
+        }
+        
+        // --- NOUVELLE FONCTION : DÉTECTION DU CHANGEMENT DE JOUR ---
+        function checkDayChange() {
+            const currentDay = new Date().getDate();
+            if (currentDay !== previousDay) {
+                const tasks = JSON.parse(localStorage.getItem(TASKS_STORAGE_KEY)) || [];
+                if (tasks.length > 0) {
+                    tasks.push({ type: 'day_change', date: new Date().toLocaleDateString('fr-FR') });
+                    localStorage.setItem(TASKS_STORAGE_KEY, JSON.stringify(tasks));
+                    displayAllTasks();
+                }
+                previousDay = currentDay;
+            }
         }
 
         function checkA1DisabledState() {
@@ -412,12 +443,18 @@
 
         // --- GESTIONNAIRES D'ÉVÉNEMENTS ---
         function handleCellClick(cell) {
+            // Permettre la sélection de A3 à tout moment
+            if (cell.id === 'a3-cell' && !cell.classList.contains('inactive-cell')) {
+                endTask();
+                return;
+            }
+            
             if (cell.classList.contains('inactive-cell')) return;
             toggleDropdown(cell);
         }
 
         function startTask() {
-            showNotification('Début du tache lancé ! 🚀');
+            showNotification('Début du tache lancé ! 🚀', 'green'); // Modification : notification stylée en vert
             taskStartTime = new Date();
             taskStartDisplayTime = taskStartTime.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
             if (workflowState === 1) {
@@ -428,9 +465,17 @@
         function endTask() {
             taskEndTime = new Date();
             taskEndDisplayTime = taskEndTime.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
-            showNotification('Tâche terminée avec succès ! ✅');
-            displayResults();
             
+            // Notification "Fin du Journée"
+            if (document.getElementById('a3-cell').classList.contains('active-cell')) {
+                showNotification('Fin de la Journée', 'red');
+            } else {
+                showNotification('Tâche terminée avec succès ! ✅', 'green');
+            }
+
+            saveTaskResult(); // Sauvegarde le résultat de la tâche
+            displayAllTasks(); // Affiche toutes les tâches dans le tableau
+
             workflowState = 0;
             currentCellIndex = 0;
             c2CompletedOptions.clear();
@@ -438,6 +483,7 @@
             clearInterval(timer);
             document.getElementById('timer-display').style.display = 'none';
             
+            // Réinitialisation des cellules
             document.querySelector('#a1-cell .cell-value').textContent = 'Locale';
             document.querySelector('#c2-cell .cell-value').textContent = 'C2';
             document.querySelector('#c3-cell .cell-value').textContent = 'C3';
@@ -452,36 +498,13 @@
             activateNextStep(true);
         }
         
-        // --- FONCTION D'AFFICHAGE DES RÉSULTATS ---
-        function displayResults() {
-            const resultsHeader = document.getElementById('results-header-row');
-            const resultsBody = document.getElementById('results-body');
-            resultsHeader.innerHTML = '';
-            resultsBody.innerHTML = '';
-
-            const headers = {
-                'a1-cell': 'N° Locale',
-                'a2-cell': 'Début du Tache',
-                'a3-cell': 'Fin du Tache',
-                'd1-cell': 'Utilisateur',
-                'c2-cell': 'C2',
-                'c3-cell': 'C3',
-                'a4-cell': 'A4',
-                'b4-cell': 'B4',
-                'c4-cell': 'C4',
-                'd4-cell': 'D4'
-            };
+        // --- FONCTIONS D'AFFICHAGE ET DE SAUVEGARDE DES RÉSULTATS ---
+        function saveTaskResult() {
+            const tasks = JSON.parse(localStorage.getItem(TASKS_STORAGE_KEY)) || [];
             
+            const taskData = {};
             const orderedCells = ['a1-cell', 'a2-cell', 'a3-cell', 'd1-cell', 'c2-cell', 'c3-cell', 'a4-cell', 'b4-cell', 'c4-cell', 'd4-cell'];
-            
-            let headerRow = '<tr>';
-            orderedCells.forEach(cellId => {
-                headerRow += `<th>${headers[cellId] || cellId.replace('-cell','').toUpperCase()}</th>`;
-            });
-            headerRow += '</tr>';
-            resultsHeader.innerHTML = headerRow;
 
-            let bodyRow = '<tr>';
             orderedCells.forEach(cellId => {
                 let cellValue = 'Vide';
                 const cell = document.getElementById(cellId);
@@ -496,46 +519,102 @@
                     c2Options.forEach(option => {
                         const vertChecked = document.getElementById(`${option}-vert`).checked;
                         const rougeChecked = document.getElementById(`${option}-rouge`).checked;
-                        if (vertChecked) c2Values.push(`${option}: Vert`);
-                        else if (rougeChecked) c2Values.push(`${option}: Rouge`);
+                        if (vertChecked) c2Values.push(`${option}: V`); // Modification : V/R au lieu de Vert/Rouge
+                        else if (rougeChecked) c2Values.push(`${option}: R`);
                     });
                     cellValue = c2Values.length > 0 ? c2Values.join(', ') : 'Vide';
                 } else if (cellId === 'c3-cell') {
                     const personneChecked = document.getElementById('personne-checkbox').checked;
                     const xylophaseChecked = document.getElementById('xylophase-checkbox').checked;
-                    if (personneChecked) cellValue = 'Personne à contrôler';
+                    if (personneChecked) cellValue = 'Personne'; // Modification : plus court
                     else if (xylophaseChecked) cellValue = 'Xylophase';
                 } else if (cellId === 'd1-cell') {
-                     cellValue = localStorage.getItem(D1_STORAGE_KEY) || 'Vide';
+                    cellValue = localStorage.getItem(D1_STORAGE_KEY) || 'Vide';
                 } else if (cell && cell.querySelector('.cell-value')) {
-                     const value = cell.querySelector('.cell-value').textContent;
-                     if (value !== 'Choisir' && value !== 'Locale' && value !== 'A4' && value !== 'B4' && value !== 'C4' && value !== 'D4' && value !== 'C2' && value !== 'C3' && value.trim() !== '') {
+                    const value = cell.querySelector('.cell-value').textContent;
+                    if (value !== 'Choisir' && value !== 'Locale' && value !== 'A4' && value !== 'B4' && value !== 'C4' && value !== 'D4' && value !== 'C2' && value !== 'C3' && value.trim() !== '') {
                         cellValue = value;
-                     }
+                    }
                 }
-                bodyRow += `<td>${cellValue}</td>`;
+                taskData[cellId] = cellValue;
             });
-            bodyRow += '</tr>';
-            resultsBody.innerHTML = bodyRow;
             
-            const timestampElement = document.getElementById('results-timestamp');
-            if (taskStartTime && taskEndTime) {
-                const duration = Math.round((taskEndTime - taskStartTime) / 1000);
-                timestampElement.textContent = `Tâche terminée le ${taskEndTime.toLocaleDateString()} à ${taskEndTime.toLocaleTimeString()} | Durée: ${duration} secondes`;
-            } else {
-                timestampElement.textContent = `Tâche terminée le ${new Date().toLocaleDateString()} à ${new Date().toLocaleTimeString()}`;
+            taskData.timestamp = new Date().toLocaleString('fr-FR');
+            
+            tasks.push(taskData);
+            localStorage.setItem(TASKS_STORAGE_KEY, JSON.stringify(tasks));
+        }
+
+        function displayAllTasks() {
+            const resultsHeader = document.getElementById('results-header-row');
+            const resultsBody = document.getElementById('results-body');
+            resultsHeader.innerHTML = '';
+            resultsBody.innerHTML = '';
+            
+            const tasks = JSON.parse(localStorage.getItem(TASKS_STORAGE_KEY)) || [];
+
+            if (tasks.length === 0) {
+                document.getElementById('results-container').style.display = 'none';
+                return;
             }
             
             document.getElementById('results-container').style.display = 'block';
+
+            // Entêtes de colonne
+            const headers = {
+                'a1-cell': 'N° Locale',
+                'a2-cell': 'Début',
+                'a3-cell': 'Fin',
+                'd1-cell': 'User',
+                'c2-cell': 'C2',
+                'c3-cell': 'C3',
+                'a4-cell': 'A4',
+                'b4-cell': 'B4',
+                'c4-cell': 'C4',
+                'd4-cell': 'D4'
+            };
+            const orderedCells = ['a1-cell', 'a2-cell', 'a3-cell', 'd1-cell', 'c2-cell', 'c3-cell', 'a4-cell', 'b4-cell', 'c4-cell', 'd4-cell'];
+
+            let headerRow = '<tr>';
+            orderedCells.forEach(cellId => {
+                headerRow += `<th>${headers[cellId] || cellId.replace('-cell','').toUpperCase()}</th>`;
+            });
+            headerRow += '</tr>';
+            resultsHeader.innerHTML = headerRow;
+
+            // Lignes de tableau
+            let bodyRows = '';
+            let lastDate = null;
+            tasks.forEach(task => {
+                if (task.type === 'day_change') {
+                    bodyRows += `<tr style="background-color:#f0f0f0;"><td colspan="10" style="text-align:center; font-weight:bold;">Journée : ${task.date}</td></tr>`;
+                    return;
+                }
+                
+                let bodyRow = '<tr>';
+                orderedCells.forEach(cellId => {
+                    bodyRow += `<td>${task[cellId] || 'Vide'}</td>`;
+                });
+                bodyRow += '</tr>';
+                bodyRows += bodyRow;
+            });
+            resultsBody.innerHTML = bodyRows;
+            
+            // Mise à jour de l'horodatage
+            const timestampElement = document.getElementById('results-timestamp');
+            timestampElement.textContent = `Dernière mise à jour: ${new Date().toLocaleDateString()} à ${new Date().toLocaleTimeString()}`;
         }
         
         function closeResults() {
             document.getElementById('results-container').style.display = 'none';
         }
 
-        function showNotification(message) {
+        // --- NOUVELLE FONCTION : NOTIFICATION STYLÉE ---
+        function showNotification(message, color) {
             const notificationDiv = document.getElementById('notification');
             notificationDiv.textContent = message;
+            notificationDiv.classList.remove('green', 'red');
+            notificationDiv.classList.add(color);
             notificationDiv.style.display = 'block';
             setTimeout(() => {
                 notificationDiv.style.display = 'none';
@@ -587,8 +666,8 @@
                     instructionDiv.textContent = "Faites un choix dans C3";
                     break;
                 case 5:
-                    currentCellIndex = 0;
-                    activateSingleWorkflowCell();
+                    // Activer toutes les cases facultatives en même temps avec le style vert
+                    activateFacultativeCells();
                     break;
                 case 6:
                     document.getElementById('a3-cell').classList.remove('inactive-cell');
@@ -600,28 +679,27 @@
             }
         }
 
-        function activateSingleWorkflowCell() {
-            if (currentCellIndex >= workflowCells.length) {
-                workflowState = 5;
-                activateNextStep();
-                return;
-            }
-
-            const currentCellId = workflowCells[currentCellIndex];
-            const currentCell = document.getElementById(currentCellId);
-            
+        // Nouvelle fonction pour activer toutes les cases facultatives en vert
+        function activateFacultativeCells() {
             deactivateAllCells();
-            currentCell.classList.remove('inactive-cell');
-            currentCell.classList.add('active-cell');
-            document.getElementById('instruction').textContent = `Sélectionnez une valeur pour la cellule ${currentCellId.toUpperCase().replace('-CELL', '')} (7s)`;
-
-            startTimer();
+            workflowCells.forEach(cellId => {
+                const cell = document.getElementById(cellId);
+                cell.classList.remove('inactive-cell');
+                cell.classList.add('active-cell', 'facultative-zone');
+            });
+            document.getElementById('a3-cell').classList.remove('inactive-cell');
+            document.getElementById('a3-cell').classList.add('active-cell');
+            document.getElementById('instruction').textContent = "Sélectionnez les valeurs pour les cases facultatives (A4, B4, C4, D4) ou terminez avec A3";
+            
+            // Afficher la zone de sélection verte
+            document.getElementById('timer-display').textContent = "Sélectionnez les cases facultatives ou terminez";
+            document.getElementById('timer-display').style.display = 'block';
         }
 
         function deactivateAllCells() {
             const cells = document.querySelectorAll('.cell:not(.transparent-cell)');
             cells.forEach(cell => {
-                cell.classList.remove('active-cell', 'selected-cell');
+                cell.classList.remove('active-cell', 'selected-cell', 'facultative-zone');
                 cell.classList.add('inactive-cell');
             });
         }
@@ -642,7 +720,8 @@
             let cell = optionDiv.closest(".cell");
             let valueDisplay = cell.querySelector(".cell-value");
             if (!valueDisplay) return;
-
+            
+            let oldValue = valueDisplay.textContent.trim(); // Stocke l'ancienne valeur
             let value = specialValue ? specialValue : optionDiv.textContent.trim();
             valueDisplay.textContent = value;
             
@@ -654,6 +733,34 @@
                 disabledOptions[value] = Date.now() + EIGHT_HOURS;
                 localStorage.setItem(A1_DISABLED_OPTIONS_KEY, JSON.stringify(disabledOptions));
                 checkA1DisabledState();
+                
+                // --- NOUVELLE FONCTION : RÉINITIALISATION DU WORKFLOW LORSQUE A1 CHANGE ---
+                if (oldValue !== 'Locale' && oldValue !== value) {
+                    showNotification('Nouvelle tâche', 'green'); // Notification stylée
+                    // Réinitialisation de tout le workflow
+                    workflowState = 0;
+                    currentCellIndex = 0;
+                    c2CompletedOptions.clear();
+                    timeLeft = 7;
+                    clearInterval(timer);
+                    document.getElementById('timer-display').style.display = 'none';
+                    
+                    document.querySelector('#c2-cell .cell-value').textContent = 'C2';
+                    document.querySelector('#c3-cell .cell-value').textContent = 'C3';
+                    document.querySelector('#a4-cell .cell-value').textContent = 'A4';
+                    document.querySelector('#b4-cell .cell-value').textContent = 'B4';
+                    document.querySelector('#c4-cell .cell-value').textContent = 'C4';
+                    document.querySelector('#d4-cell .cell-value').textContent = 'D4';
+                    resetC2();
+                    resetC3();
+
+                    // Sauvegarde la tâche précédente si elle était en cours
+                    saveTaskResult();
+                    displayAllTasks();
+                    
+                    activateNextStep();
+                    return;
+                }
             }
 
             toggleDropdown(cell);
@@ -663,45 +770,39 @@
                 setTimeout(activateNextStep, 200);
             } else if (workflowCells.includes(cellId)) {
                 cell.classList.add('selected-cell');
-                clearInterval(timer);
+                // Vérifier si toutes les cases facultatives sont sélectionnées
+                checkFacultativeCompletion();
+            }
+        }
+        
+        // Nouvelle fonction pour vérifier si toutes les cases facultatives sont sélectionnées
+        function checkFacultativeCompletion() {
+            let allSelected = true;
+            for (let i = 0; i < workflowCells.length; i++) {
+                const cell = document.getElementById(workflowCells[i]);
+                if (!cell.classList.contains('selected-cell') && 
+                    cell.querySelector('.cell-value').textContent === workflowCells[i].toUpperCase().replace('-CELL', '')) {
+                    allSelected = false;
+                    break;
+                }
+            }
+            
+            if (allSelected) {
                 document.getElementById('timer-display').style.display = 'none';
-
-                currentCellIndex++;
-                setTimeout(activateSingleWorkflowCell, 200);
+                setTimeout(activateNextStep, 200);
             }
         }
         
         // --- GESTION DU TIMER POUR LES CASES A4-D4 ---
         function startTimer() {
-            clearInterval(timer);
-            timeLeft = 7;
-            document.getElementById('timer-display').style.display = 'block';
-            updateTimerDisplay();
-            
-            timer = setInterval(() => {
-                timeLeft--;
-                updateTimerDisplay();
-                
-                if (timeLeft <= 0) {
-                    clearInterval(timer);
-                    document.getElementById('timer-display').style.display = 'none';
-                    currentCellIndex++;
-                    activateSingleWorkflowCell();
-                }
-            }, 1000);
+            // Supprimé car nous n'utilisons plus de timer
         }
         
         function updateTimerDisplay() {
-            const timerDisplay = document.getElementById('timer-display');
-            timerDisplay.textContent = `Temps restant : ${timeLeft} secondes`;
-            if (timeLeft <= 3) {
-                timerDisplay.style.backgroundColor = '#f44336';
-            } else {
-                timerDisplay.style.backgroundColor = '#ff9800';
-            }
+            // Supprimé car nous n'utilisons plus de timer
         }
 
-        // --- LOGIQUE SPÉCIFIQUE À C2 ---
+        // --- LOGIQUE SPÉCIFIQUE À C2 et C3 ---
         function updateTextColor(option, color) {
             const textElement = document.getElementById(`${option}-text`);
             textElement.classList.remove('text-red', 'text-green');
@@ -718,72 +819,47 @@
             } else {
                 c2CompletedOptions.delete(option);
             }
+            checkC2Completion();
+        }
 
-            document.querySelector('#c2-cell .cell-value').textContent = `${c2CompletedOptions.size}/${c2TotalOptions} cochés`;
-            updateCellColor('c2-cell', 'c2');
-
-            if (c2CompletedOptions.size === c2TotalOptions && workflowState === 3) {
-                setTimeout(activateNextStep, 500);
+        function checkC2Completion() {
+            if (c2CompletedOptions.size === c2TotalOptions) {
+                setTimeout(activateNextStep, 200);
             }
         }
 
-        // --- LOGIQUE SPÉCIFIQUE À C3 ---
-        function updateC3TextColor(option) {
-            const personneCheckbox = document.getElementById('personne-checkbox');
-            const xylophaseCheckbox = document.getElementById('xylophase-checkbox');
-            
-            if (option === 'personne' && personneCheckbox.checked) xylophaseCheckbox.checked = false;
-            else if (option === 'xylophase' && xylophaseCheckbox.checked) personneCheckbox.checked = false;
-
-            updateCellColor('c3-cell', 'c3');
-
-            if((personneCheckbox.checked || xylophaseCheckbox.checked) && workflowState === 4) {
-                setTimeout(activateNextStep, 500);
-            }
-        }
-        
-        // --- FONCTIONS UTILITAIRES ---
-        function updateCellColor(cellId, type) {
-            const cell = document.getElementById(cellId);
-            cell.classList.remove('cell-red', 'cell-green');
-
-            if (type === 'c2') {
-                const hasRed = document.querySelectorAll('#c2-cell input[id$="-rouge"]:checked').length > 0;
-                if (hasRed) cell.classList.add('cell-red');
-                else if (c2CompletedOptions.size > 0) cell.classList.add('cell-green');
-            } else if (type === 'c3') {
-                if (document.getElementById('xylophase-checkbox').checked) cell.classList.add('cell-red');
-                else if (document.getElementById('personne-checkbox').checked) cell.classList.add('cell-green');
-            }
-        }
-        
         function resetC2() {
-            document.querySelectorAll('#c2-cell input[type="checkbox"]').forEach(cb => cb.checked = false);
-            document.querySelectorAll('#c2-cell .option-text').forEach(txt => txt.classList.remove('text-red', 'text-green'));
-            updateCellColor('c2-cell', 'c2');
-            c2CompletedOptions.clear();
-            document.querySelector('#c2-cell .cell-value').textContent = 'C2';
+            const options = ['chambre', 'cuisine', 'terrasse', 'autre'];
+            options.forEach(option => {
+                const textElement = document.getElementById(`${option}-text`);
+                textElement.classList.remove('text-red', 'text-green');
+                document.getElementById(`${option}-vert`).checked = false;
+                document.getElementById(`${option}-rouge`).checked = false;
+            });
         }
-
-        function resetC3() {
-            document.querySelectorAll('#c3-cell input[type="checkbox"]').forEach(cb => cb.checked = false);
-            document.querySelectorAll('#c3-cell .option-text').forEach(txt => txt.classList.remove('text-red', 'text-green'));
-            updateCellColor('c3-cell', 'c3');
-            document.querySelector('#c3-cell .cell-value').textContent = 'C3';
-        }
-
-        document.addEventListener("click", function(e) {
-            if (!e.target.closest(".cell") || e.target.closest(".dropdown")) {
-                document.querySelectorAll(".dropdown").forEach(d => d.style.display = "none");
-            }
-        });
         
-        document.addEventListener("keydown", function(e) {
-            if (e.key === "Escape") {
-                closeResults();
-            }
-        });
-    </script>
+        function updateC3TextColor(option) {
+            const personneChecked = document.getElementById('personne-checkbox').checked;
+            const xylophaseChecked = document.getElementById('xylophase-checkbox').checked;
 
+            if (personneChecked) {
+                document.getElementById('xylophase-checkbox').checked = false;
+            }
+            if (xylophaseChecked) {
+                document.getElementById('personne-checkbox').checked = false;
+            }
+
+            // Avancer vers la prochaine étape si une option est sélectionnée
+            if (personneChecked || xylophaseChecked) {
+                setTimeout(activateNextStep, 200);
+            }
+        }
+        
+        function resetC3() {
+            document.getElementById('personne-checkbox').checked = false;
+            document.getElementById('xylophase-checkbox').checked = false;
+        }
+
+    </script>
 </body>
 </html>
