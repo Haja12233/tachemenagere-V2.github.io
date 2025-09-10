@@ -3,863 +3,896 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Matrice 4x4 Interactive Corrigée</title>
+    <title>Matrice 4x4 - Gestion de Tâche</title>
+    <link rel="stylesheet" href="style.css">
     <style>
-        body {
-            font-family: sans-serif;
-            background-color: #f4f7f9;
-            margin: 0;
-            padding: 20px;
-            box-sizing: border-box;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
+    :root {
+    --primary-color: #0056b3;
+    --primary-hover-color: #00448a;
+    --success-color: #28a745;
+    --success-hover-color: #218838;
+    --text-color: #333;
+    --secondary-text-color: #6c757d;
+    --border-color: #e0e0e0;
+    --bg-color: #f8f9fa;
+    --card-bg-color: #ffffff;
+    --shadow-light: 0 2px 8px rgba(0, 0, 0, 0.05);
+    }
 
+    body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        background-color: var(--bg-color);
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        min-height: 10vh;
+        margin: 0;
+        padding: 20px;
+    }
+
+    .container {
+        width: 100%;
+        max-width: 700px;
+        background: var(--card-bg-color);
+        padding: 25px;
+        border-radius: 16px;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+    }
+
+    h1 {
+        text-align: center;
+        color: var(--primary-color);
+        margin-bottom: 25px;
+        font-size: 1.8rem;
+        font-weight: 600;
+    }
+
+    .grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 12px;
+    }
+
+    .cell {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        aspect-ratio: 1/1;
+        border: 1px solid var(--border-color);
+        border-radius: 10px;
+        font-size: 15px;
+        color: var(--text-color);
+        background-color: var(--card-bg-color);
+        cursor: pointer;
+        transition: all 0.2s ease-in-out;
+        padding: 10px;
+        text-align: center;
+        word-break: break-word;
+    }
+    
+    .cell#c2 {
+        display: block;
+        padding: 8px;
+    }
+
+    .cell:hover:not(.empty-cell):not(.default-user-active) {
+        border-color: var(--primary-color);
+        box-shadow: var(--shadow-light);
+    }
+
+    .empty-cell {
+        background-color: var(--bg-color);
+        border: 1px dashed var(--border-color);
+        cursor: default;
+    }
+
+    .cell-content {
+        font-weight: 500;
+        color: var(--text-color);
+    }
+
+    .cell-content.placeholder {
+        font-style: italic;
+        color: var(--secondary-text-color);
+    }
+
+    .cell button {
+        width: 100%;
+        height: 100%;
+        border: none;
+        background: var(--primary-color);
+        color: white;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 13px;
+        font-weight: bold;
+        transition: background-color 0.2s;
+        padding: 5px;
+    }
+
+    .cell button:hover {
+        background: var(--primary-hover-color);
+    }
+
+    .cell .button-container {
+        display: flex;
+        gap: 8px;
+        width: 100%;
+        height: 100%;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .cell .choice-button {
+        flex-grow: 1;
+        height: 80%;
+        background: var(--bg-color);
+        color: var(--primary-color);
+        border: 1px solid var(--primary-color);
+        border-radius: 8px;
+        font-size: 16px;
+        font-weight: bold;
+        transition: all 0.2s;
+    }
+
+    .cell .choice-button:hover {
+        background: var(--primary-color);
+        color: white;
+    }
+
+    /* Styles pour la liste des lieux */
+    .location-container {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        height: 100%;
+    }
+
+    .location-list {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        padding: 0;
+        width: 100%;
+        flex-grow: 1;
+        overflow-y: auto;
+        margin-bottom: 6px;
+    }
+    
+
+    .location-item {
+        padding: 8px 10px;
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        background-color: var(--card-bg-color);
+        font-size: 14px;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.2s ease-in-out;
+    }
+
+    .location-item:hover {
+        background-color: #e9ecef;
+    }
+
+    .location-item.empty {
+        font-style: italic;
+        color: var(--secondary-text-color);
+    }
+
+    .list-add-button {
+        display: block;
+        width: 100%;
+        padding: 8px 10px;
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        background-color: var(--primary-color);
+        color: white;
+        font-weight: bold;
+        font-size: 16px;
+        text-align: center;
+        cursor: pointer;
+        transition: background-color 0.2s;
+        position : relative;
+        left: -11px;
+        line-height: 1; /* Pour centrer le + */
+    }
+    
+    .list-add-button:hover {
+        background-color: var(--primary-hover-color);
+    }
+
+    .add-button {
+        width: 100%;
+        padding: 8px;
+        background-color: var(--primary-color);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: background-color 0.2s;
+        margin-top: 8px;
+        font-size: 1.5rem;
+        line-height: 1;
+    }
+
+    .add-button:hover {
+        background-color: var(--primary-hover-color);
+    }
+
+    .dropdown-menu {
+        display: none;
+        position: absolute;
+        top: calc(100% + 5px);
+        left: 0;
+        width: 100%;
+        background-color: var(--card-bg-color);
+        border: 1px solid var(--border-color);
+        border-radius: 10px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        z-index: 10;
+        max-height: 200px;
+        overflow-y: auto;
+    }
+
+    .dropdown-menu.show { display: block; }
+    .dropdown-item { padding: 12px 15px; cursor: pointer; border-bottom: 1px solid var(--border-color); transition: background-color 0.2s; display: flex; justify-content: space-between; align-items: center; font-size: 14px; }
+    .dropdown-item:last-child { border-bottom: none; }
+    .dropdown-item:hover { background-color: var(--bg-color); }
+    .dropdown-item-content { flex-grow: 1; }
+
+    .add-item {
+        font-size: 1.2rem;
+        padding: 8px 15px;
+        color: var(--primary-color);
+        font-weight: bold;
+        text-align: center;
+    }
+
+    .text-green {
+        color: #28a745;
+        font-weight: bold;
+    }
+
+    .text-red {
+        color: #dc3545;
+        font-weight: bold;
+    }
+
+    .default-user {
+        opacity: 0.8;
+        font-style: italic;
+        font-weight: 500;
+    }
+
+    .default-user-active {
+        cursor: default;
+        background-color: #e9f0f6;
+        border-color: var(--primary-color);
+    }
+
+    #refresh-button {
+        margin-top: 25px;
+        padding: 12px 25px;
+        background-color: var(--success-color);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-size: 16px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: background-color 0.2s, transform 0.2s;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    #refresh-button:hover {
+        background-color: var(--success-hover-color);
+        transform: translateY(-2px);
+    }
+
+    #notification-banner {
+        position: fixed;
+        top: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        padding: 12px 25px;
+        background-color: var(--success-color);
+        color: white;
+        font-weight: bold;
+        font-size: 16px;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        z-index: 100;
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.5s ease-in-out, visibility 0.5s;
+        pointer-events: none;
+        max-width: 90%;
+        text-align: center;
+    }
+
+    #notification-banner.show {
+        opacity: 1;
+        visibility: visible;
+    }
+
+    /* Scrollbar Style */
+    ::-webkit-scrollbar {
+        width: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 10px;
+    }
+
+    ::-webkit-scrollbar-thumb {
+        background: #c0c0c0;
+        border-radius: 10px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+        background: #a0a0a0;
+    }
+    #c2.text-green {
+    background-color: #d4edda !important;
+    color: #155724 !important;
+    }
+    #c2.text-red {
+        background-color: #f8d7da !important;
+        color: #721c24 !important;
+    }
+    #c2 .cell-content {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    font-size: 1.6em;
+    font-weight: bold;
+    text-align: center;
+    }
+
+    @media (max-width: 768px) {
         .container {
-            width: 100%;
-            max-width: 800px;
+            padding: 15px;
         }
-        
+        h1 {
+            font-size: 1.5rem;
+        }
         .grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
             gap: 10px;
-            margin: 20px 0;
         }
-        
         .cell {
-            border: 2px solid #ccc;
-            padding: 20px;
-            text-align: center;
-            position: relative;
-            cursor: pointer;
-            background-color: white;
-            transition: all 0.3s ease;
-            border-radius: 8px;
-            font-weight: bold;
-            color: #333;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            min-height: 80px;
-            box-sizing: border-box;
+            font-size: 13px;
+            padding: 8px;
         }
-        
-        .transparent-cell {
-            background-color: transparent;
-            border: none;
-            cursor: default;
+        .cell button {
+            font-size: 12px;
         }
-        
-        .inactive-cell {
-            background-color: #f0f0f0;
-            opacity: 0.6;
-            cursor: not-allowed;
-            box-shadow: none;
+        .choice-button {
+            font-size: 14px !important;
         }
-        
-        .inactive-cell * {
-            pointer-events: none;
+        .location-item, .dropdown-item {
+            font-size: 13px;
+            padding: 10px;
         }
-        
-        .active-cell {
-            background-color: #e3f2fd;
-            border-color: #2196F3;
-            box-shadow: 0 0 15px rgba(33, 150, 243, 0.5);
-        }
-        
-        .selected-cell {
-            background-color: #bbdefb;
-            border-color: #1976D2;
-        }
-        
-        /* Style pour la zone facultative en vert */
-        .facultative-zone {
-            background-color: #c8e6c9 !important;
-            border-color: #4caf50 !important;
-            box-shadow: 0 0 15px rgba(76, 175, 80, 0.5) !important;
-        }
-        
-        /* Style pour A3 en bleu */
-        #a3-cell.active-cell {
-            background-color: #bbdefb;
-            border-color: #1976D2;
-        }
-        
-        .dropdown {
-            position: absolute;
-            top: 100%;
-            left: 0;
-            right: 0;
-            background: white;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            display: none;
-            z-index: 10;
-            min-width: 100%;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-        }
-        .dropdown div {
-            padding: 10px 15px;
-            cursor: pointer;
-        }
-        .dropdown div:hover {
-            background: #f0f0f0;
-        }
-        .dropdown div.disabled {
-            color: #ccc;
-            cursor: not-allowed;
-            background-color: #f0f0f0;
-        }
-        .dropdown div.disabled:hover {
-            background-color: #f0f0f0;
-        }
-
-        button {
-            padding: 12px 18px;
+        #refresh-button {
+            padding: 10px 20px;
             font-size: 14px;
-            font-weight: bold;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: 0.3s;
-            width: 100%;
-            color: white;
         }
-        .btn-debut { background-color: #28a745; }
-        .btn-debut:hover { background-color: #218838; }
-        .btn-fin { background-color: #2196F3; }
-        .btn-fin:hover { background-color: #1976D2; }
-        
-        .checkbox-container { display: flex; gap: 10px; }
-        .checkbox-item { display: flex; align-items: center; gap: 5px; }
-        .checkbox-item input[type="checkbox"] { width: 16px; height: 16px; cursor: pointer; }
-        .checkbox-item label { font-size: 12px; cursor: pointer; }
-        
-        .text-red { color: #d63031; font-weight: bold; }
-        .text-green { color: #00b894; font-weight: bold; }
-        
-        .cell-red { background-color: #ffcccc; }
-        .cell-green { background-color: #ccffcc; }
-        
-        .option-with-checkbox { display: flex; justify-content: space-between; width: 100%; align-items: center; }
-        .option-text { flex-grow: 1; text-align: left; }
-        
-        .instruction, .timer-display, .notification {
-            position: fixed;
-            left: 50%;
-            transform: translateX(-50%);
-            padding: 15px 30px;
-            border-radius: 8px;
-            font-weight: bold;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-            z-index: 100;
-            display: none;
-        }
-        .instruction { top: 20px; background-color: #2196F3; color: white; }
-        .timer-display { bottom: 20px; background-color: #4caf50; color: white; }
-        /* Notifications spécifiques */
-        .notification.green { background-color: #4CAF50; color: white; }
-        .notification.red { background-color: #F44336; color: white; }
-        
-        .results-container {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            background-color: white;
-            border-top: 3px solid #2196F3;
-            padding: 20px;
-            box-shadow: 0 -5px 15px rgba(0,0,0,0.1);
-            z-index: 1000;
-            max-height: 300px;
-            overflow-y: auto;
-            display: none;
-        }
-        
-        .results-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 10px;
-        }
-        
-        .results-table th, .results-table td {
-            border: 1px solid #ddd;
-            padding: 12px;
-            text-align: left;
-        }
-        
-        .results-table th {
-            background-color: #e3f2fd;
-            font-weight: bold;
-        }
-        
-        .close-results {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            background: #dc3545;
-            color: white;
-            border: none;
-            border-radius: 50%;
-            width: 30px;
-            height: 30px;
-            cursor: pointer;
-            font-weight: bold;
-        }
-        
-        .results-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-        }
-        
-        .results-title {
-            color: #2196F3;
-            margin: 0;
-        }
-        
-        .timestamp {
-            color: #666;
-            font-style: italic;
-            margin-top: 10px;
-            text-align: right;
-        }
-        
-        /* Responsive Styles */
-        @media (min-width: 1024px) {
-            .grid {
-                grid-template-rows: repeat(4, 1fr);
-            }
-        }
-        
-        @media (max-width: 1023px) {
-            body {
-                padding: 10px;
-            }
-            .grid {
-                gap: 5px;
-            }
-            .cell {
-                min-height: 60px;
-                padding: 10px;
-            }
-            button {
-                padding: 10px 15px;
-            }
-        }
-        
-        @media (max-width: 767px) {
-            body {
-                padding: 5px;
-            }
-            .grid {
-                grid-template-columns: 1fr;
-                gap: 5px;
-            }
-            .cell {
-                min-height: 50px;
-            }
-            .transparent-cell {
-                display: none;
-            }
-            .dropdown {
-                position: static;
-                margin-top: 5px;
-            }
-            .instruction, .timer-display, .notification {
-                width: 90%;
-                left: 50%;
-                transform: translateX(-50%);
-                text-align: center;
-                box-sizing: border-box;
-            }
-            .results-container {
-                padding: 10px;
-                max-height: 60vh;
-            }
-            .results-table th, .results-table td {
-                padding: 8px;
-                font-size: 12px;
-            }
-        }
+    }
     </style>
 </head>
 <body>
 
-    <div id="instruction" class="instruction"></div>
-    <div id="timer-display" class="timer-display"></div>
-    <div id="notification" class="notification"></div>
+<div id="notification-banner">Tâche complète ! 🎉</div>
 
-    <div class="container">
-        <div class="grid">
-            <div id="a1-cell" class="cell inactive-cell" onclick="handleCellClick(this)">
-                <span class="cell-value">Locale</span>
-                <div class="dropdown" id="a1-dropdown">
-                    <div onclick="chooseValue(this)">Locale</div>
-                    <div onclick="chooseValue(this)">P1</div>
-                    <div onclick="chooseValue(this)">P2</div>
-                    <div onclick="chooseValue(this)">P3</div>
-                    <div onclick="chooseValue(this)">P4</div>
-                    <div onclick="chooseValue(this)">P5</div>
-                    <div onclick="chooseValue(this)">P6</div>
-                    <div onclick="chooseValue(this)">P7</div>
-                    <div onclick="chooseValue(this)">P8</div>
-                    <div onclick="chooseValue(this)">P9</div>
-                    <div onclick="chooseValue(this)">P10</div>
-                </div>
-            </div>
-            <div class="cell transparent-cell"></div>
-            <div class="cell transparent-cell"></div>
-            <div id="d1-cell" class="cell" onclick="handleCellClick(this)">
-                <span class="cell-value">Choisir</span>
-                <div class="dropdown">
-                    <div onclick="chooseValue(this, 'A')">Anniva</div>
-                    <div onclick="chooseValue(this, 'T')">Tinah</div>
-                </div>
-            </div>
-            <div id="a2-cell" class="cell inactive-cell">
-                <button class="btn-debut" onclick="startTask()">Début du tache</button>
-            </div>
-            <div class="cell transparent-cell"></div>
-            <div id="c2-cell" class="cell inactive-cell" onclick="handleCellClick(this)">
-                <span class="cell-value">C2</span>
-                <div class="dropdown">
-                    <div><div class="option-with-checkbox"><span class="option-text" id="chambre-text">Chambre</span><div class="checkbox-container"><div class="checkbox-item"><input type="checkbox" id="chambre-vert" onchange="updateTextColor('chambre', 'green')"><label for="chambre-vert">V</label></div><div class="checkbox-item"><input type="checkbox" id="chambre-rouge" onchange="updateTextColor('chambre', 'red')"><label for="chambre-rouge">R</label></div></div></div></div>
-                    <div><div class="option-with-checkbox"><span class="option-text" id="cuisine-text">Cuisine</span><div class="checkbox-container"><div class="checkbox-item"><input type="checkbox" id="cuisine-vert" onchange="updateTextColor('cuisine', 'green')"><label for="cuisine-vert">V</label></div><div class="checkbox-item"><input type="checkbox" id="cuisine-rouge" onchange="updateTextColor('cuisine', 'red')"><label for="cuisine-rouge">R</label></div></div></div></div>
-                    <div><div class="option-with-checkbox"><span class="option-text" id="terrasse-text">Terrasse</span><div class="checkbox-container"><div class="checkbox-item"><input type="checkbox" id="terrasse-vert" onchange="updateTextColor('terrasse', 'green')"><label for="terrasse-vert">V</label></div><div class="checkbox-item"><input type="checkbox" id="terrasse-rouge" onchange="updateTextColor('terrasse', 'red')"><label for="terrasse-rouge">R</label></div></div></div></div>
-                    <div><div class="option-with-checkbox"><span class="option-text" id="autre-text">Autre</span><div class="checkbox-container"><div class="checkbox-item"><input type="checkbox" id="autre-vert" onchange="updateTextColor('autre', 'green')"><label for="autre-vert">V</label></div><div class="checkbox-item"><input type="checkbox" id="autre-rouge" onchange="updateTextColor('autre', 'red')"><label for="autre-rouge">R</label></div></div></div></div>
-                </div>
-            </div>
-            <div class="cell transparent-cell"></div>
-            <div id="a3-cell" class="cell inactive-cell">
-                <button class="btn-fin" onclick="endTask()">Fin du tache</button>
-            </div>
-            <div class="cell transparent-cell"></div>
-            <div id="c3-cell" class="cell inactive-cell" onclick="handleCellClick(this)">
-                <span class="cell-value">C3</span>
-                <div class="dropdown">
-                    <div><div class="option-with-checkbox"><span class="option-text" id="personne-text">Personne a controlé</span><div class="checkbox-container"><div class="checkbox-item"><input type="checkbox" id="personne-checkbox" onchange="updateC3TextColor('personne')"></div></div></div></div>
-                    <div><div class="option-with-checkbox"><span class="option-text" id="xylophase-text">Xylophase</span><div class="checkbox-container"><div class="checkbox-item"><input type="checkbox" id="xylophase-checkbox" onchange="updateC3TextColor('xylophase')"></div></div></div></div>
-                </div>
-            </div>
-            <div class="cell transparent-cell"></div>
-            <div id="a4-cell" class="cell inactive-cell" onclick="handleCellClick(this)"><span class="cell-value">A4</span><div class="dropdown"><div onclick="chooseValue(this)">Vide</div><div onclick="chooseValue(this)">1</div><div onclick="chooseValue(this)">2</div><div onclick="chooseValue(this)">3</div></div></div>
-            <div id="b4-cell" class="cell inactive-cell" onclick="handleCellClick(this)"><span class="cell-value">B4</span><div class="dropdown"><div onclick="chooseValue(this)">Vide</div><div onclick="chooseValue(this)">1</div><div onclick="chooseValue(this)">2</div><div onclick="chooseValue(this)">3</div></div></div>
-            <div id="c4-cell" class="cell inactive-cell" onclick="handleCellClick(this)"><span class="cell-value">C4</span><div class="dropdown"><div onclick="chooseValue(this)">Vide</div><div onclick="chooseValue(this)">1</div><div onclick="chooseValue(this)">2</div><div onclick="chooseValue(this)">3</div></div></div>
-            <div id="d4-cell" class="cell inactive-cell" onclick="handleCellClick(this)"><span class="cell-value">D4</span><div class="dropdown"><div onclick="chooseValue(this)">Vide</div><div onclick="chooseValue(this)">1</div><div onclick="chooseValue(this)">2</div><div onclick="chooseValue(this)">3</div></div></div>
+<div class="container">
+    <h1>Gestion des Tâches</h1>
+    <div class="grid">
+        <div class="cell" id="a1" data-initial-text="Locale">
+            <span class="cell-content placeholder">Locale</span>
+            <div class="dropdown-menu"></div>
+        </div>
+        <div class="cell empty-cell" id="b1"></div>
+        <div class="cell empty-cell" id="c1"></div>
+        <div class="cell" id="d1" data-initial-text="Utilisateur">
+            <span class="cell-content placeholder">Utilisateur</span>
+            <div class="dropdown-menu"></div>
+        </div>
+        <div class="cell" id="a2" data-initial-text="Début Tâche">
+            <button>Début</button>
+        </div>
+        <div class="cell empty-cell" id="b2"></div>
+        <div class="cell" id="c2" data-initial-text=""></div>
+        <div class="cell empty-cell" id="d2"></div>
+        <div class="cell" id="a3" data-initial-text="Fin Tâche">
+            <button>Fin</button>
+        </div>
+        <div class="cell empty-cell" id="b3"></div>
+        <div class="cell" id="c3" data-initial-text="Contrôle Xylophage">
+            <span class="cell-content placeholder">Contrôle Xylophage</span>
+            <div class="dropdown-menu"></div>
+        </div>
+        <div class="cell empty-cell" id="d3"></div>
+        <div class="cell" id="a4" data-initial-text="Note">
+            <span class="cell-content placeholder">Note</span>
+            <div class="dropdown-menu"></div>
+        </div>
+        <div class="cell" id="b4" data-initial-text="Note">
+            <span class="cell-content placeholder">Note</span>
+            <div class="dropdown-menu"></div>
+        </div>
+        <div class="cell" id="c4" data-initial-text="Note">
+            <span class="cell-content placeholder">Note</span>
+            <div class="dropdown-menu"></div>
+        </div>
+        <div class="cell" id="d4" data-initial-text="Note">
+            <span class="cell-content placeholder">Note</span>
+            <div class="dropdown-menu"></div>
         </div>
     </div>
+    <button id="refresh-button">🔄 Actualiser toutes les cases</button>
+</div>
 
-    <div id="results-container" class="results-container">
-        <div class="results-header">
-            <h3 class="results-title">Résultats de la Tâche</h3>
-            <button class="close-results" onclick="closeResults()">×</button>
-        </div>
-        <table class="results-table" id="results-table">
-            <thead id="results-header-row"></thead>
-            <tbody id="results-body"></tbody>
-        </table>
-        <div class="timestamp" id="results-timestamp"></div>
-    </div>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+    
+    const initialUsers = ['Anniva', 'Tina'];
+    let initialLocales = ['P1', 'P2', 'P3', 'P4', 'P5', 'P6', 'P7', 'P8', 'P9', 'P10'];
+    let defaultUser = null, defaultUserExpiry = null;
+    let defaultLocale = null, defaultLocaleExpiry = null;
+    const requiredCells = ['a1', 'a2', 'a3', 'c2', 'c3', 'd1'];
+    let clickTimeout = null;
 
-    <script>
-        // --- VARIABLES D'ÉTAT ---
-        let workflowState = 0;
-        let timer;
-        let timeLeft = 7;
-        const workflowCells = ['a4-cell', 'b4-cell', 'c4-cell', 'd4-cell'];
-        let currentCellIndex = 0;
-        let c2CompletedOptions = new Set();
-        const c2TotalOptions = 4;
-        let taskStartTime = null;
-        let taskEndTime = null;
-        let taskStartDisplayTime = null;
-        let taskEndDisplayTime = null;
+    // L'URL de votre application web Google Apps Script.
+    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz7NrE1iwl4vthz2Sxx3DIOoRXrSkq8nolvjefXo-w-KdBaP948MGa19hRanVgR5EQK/exec';
 
-        const D1_STORAGE_KEY = 'd1_default_value';
-        const D1_EXPIRY_KEY = 'd1_expiry_time';
-        const A1_DISABLED_OPTIONS_KEY = 'a1_disabled_options';
-        const TASKS_STORAGE_KEY = 'completed_tasks'; // Nouvelle clé de stockage
-        const EIGHT_HOURS = 8 * 60 * 60 * 1000;
-        let previousDay = new Date().getDate(); // Variable pour la détection du changement de jour
+    function saveResults() {
+        const results = {};
+        const cellsToSave = ['a1', 'a2', 'a3', 'a4', 'b4', 'c2', 'c3', 'c4', 'd1', 'd4'];
+        cellsToSave.forEach(id => {
+            const cell = document.getElementById(id);
+            if (!cell) return;
+            const contentSpan = cell.querySelector('.cell-content');
+            const contentButton = cell.querySelector('button:not(.choice-button)');
+            let currentValue = '', color = '';
 
-        // --- INITIALISATION ---
-        document.addEventListener('DOMContentLoaded', () => {
-            loadInitialState();
-            activateNextStep(true);
-            checkDayChange(); // Vérifie le changement de jour au chargement
-            displayAllTasks(); // Affiche toutes les tâches au chargement
-        });
-
-        function loadInitialState() {
-            const storedD1 = localStorage.getItem(D1_STORAGE_KEY);
-            const d1Expiry = localStorage.getItem(D1_EXPIRY_KEY);
-            if (storedD1 && d1Expiry && Date.now() < d1Expiry) {
-                document.querySelector('#d1-cell .cell-value').textContent = storedD1;
-            } else {
-                localStorage.removeItem(D1_STORAGE_KEY);
-                localStorage.removeItem(D1_EXPIRY_KEY);
-            }
-            
-            checkA1DisabledState();
-        }
-        
-        // --- NOUVELLE FONCTION : DÉTECTION DU CHANGEMENT DE JOUR ---
-        function checkDayChange() {
-            const currentDay = new Date().getDate();
-            if (currentDay !== previousDay) {
-                const tasks = JSON.parse(localStorage.getItem(TASKS_STORAGE_KEY)) || [];
-                if (tasks.length > 0) {
-                    tasks.push({ type: 'day_change', date: new Date().toLocaleDateString('fr-FR') });
-                    localStorage.setItem(TASKS_STORAGE_KEY, JSON.stringify(tasks));
-                    displayAllTasks();
-                }
-                previousDay = currentDay;
-            }
-        }
-
-        function checkA1DisabledState() {
-            const disabledOptions = JSON.parse(localStorage.getItem(A1_DISABLED_OPTIONS_KEY)) || {};
-            const dropdown = document.getElementById('a1-dropdown');
-            const options = dropdown.getElementsByTagName('div');
-            const now = Date.now();
-
-            for (let i = 0; i < options.length; i++) {
-                const value = options[i].textContent.trim();
-                if (disabledOptions[value] && now < disabledOptions[value]) {
-                    options[i].classList.add('disabled');
-                    options[i].onclick = null;
-                } else {
-                    options[i].classList.remove('disabled');
-                    options[i].onclick = function() { chooseValue(this); };
-                    delete disabledOptions[value];
-                }
-            }
-            localStorage.setItem(A1_DISABLED_OPTIONS_KEY, JSON.stringify(disabledOptions));
-        }
-
-        // --- GESTIONNAIRES D'ÉVÉNEMENTS ---
-        function handleCellClick(cell) {
-            // Permettre la sélection de A3 à tout moment
-            if (cell.id === 'a3-cell' && !cell.classList.contains('inactive-cell')) {
-                endTask();
-                return;
-            }
-            
-            if (cell.classList.contains('inactive-cell')) return;
-            toggleDropdown(cell);
-        }
-
-        function startTask() {
-            showNotification('Début du tache lancé ! 🚀', 'green'); // Modification : notification stylée en vert
-            taskStartTime = new Date();
-            taskStartDisplayTime = taskStartTime.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
-            if (workflowState === 1) {
-                activateNextStep();
-            }
-        }
-
-        function endTask() {
-            taskEndTime = new Date();
-            taskEndDisplayTime = taskEndTime.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
-            
-            // Notification "Fin du Journée"
-            if (document.getElementById('a3-cell').classList.contains('active-cell')) {
-                showNotification('Fin de la Journée', 'red');
-            } else {
-                showNotification('Tâche terminée avec succès ! ✅', 'green');
-            }
-
-            saveTaskResult(); // Sauvegarde le résultat de la tâche
-            displayAllTasks(); // Affiche toutes les tâches dans le tableau
-
-            workflowState = 0;
-            currentCellIndex = 0;
-            c2CompletedOptions.clear();
-            timeLeft = 7;
-            clearInterval(timer);
-            document.getElementById('timer-display').style.display = 'none';
-            
-            // Réinitialisation des cellules
-            document.querySelector('#a1-cell .cell-value').textContent = 'Locale';
-            document.querySelector('#c2-cell .cell-value').textContent = 'C2';
-            document.querySelector('#c3-cell .cell-value').textContent = 'C3';
-            document.querySelector('#a4-cell .cell-value').textContent = 'A4';
-            document.querySelector('#b4-cell .cell-value').textContent = 'B4';
-            document.querySelector('#c4-cell .cell-value').textContent = 'C4';
-            document.querySelector('#d4-cell .cell-value').textContent = 'D4';
-
-            resetC2();
-            resetC3();
-            
-            activateNextStep(true);
-        }
-        
-        // --- FONCTIONS D'AFFICHAGE ET DE SAUVEGARDE DES RÉSULTATS ---
-        function saveTaskResult() {
-            const tasks = JSON.parse(localStorage.getItem(TASKS_STORAGE_KEY)) || [];
-            
-            const taskData = {};
-            const orderedCells = ['a1-cell', 'a2-cell', 'a3-cell', 'd1-cell', 'c2-cell', 'c3-cell', 'a4-cell', 'b4-cell', 'c4-cell', 'd4-cell'];
-
-            orderedCells.forEach(cellId => {
-                let cellValue = 'Vide';
-                const cell = document.getElementById(cellId);
-                
-                if (cellId === 'a2-cell') {
-                    cellValue = taskStartDisplayTime || 'N/A';
-                } else if (cellId === 'a3-cell') {
-                    cellValue = taskEndDisplayTime || 'N/A';
-                } else if (cellId === 'c2-cell') {
-                    const c2Options = ['chambre', 'cuisine', 'terrasse', 'autre'];
-                    const c2Values = [];
-                    c2Options.forEach(option => {
-                        const vertChecked = document.getElementById(`${option}-vert`).checked;
-                        const rougeChecked = document.getElementById(`${option}-rouge`).checked;
-                        if (vertChecked) c2Values.push(`${option}: V`); // Modification : V/R au lieu de Vert/Rouge
-                        else if (rougeChecked) c2Values.push(`${option}: R`);
+            if (id === 'c2') {
+                const locationList = cell.querySelector('.location-list');
+                const contentSpanC2 = cell.querySelector('.cell-content');
+                if (locationList) {
+                    const locationsWithColor = Array.from(locationList.querySelectorAll('.location-item')).map(item => {
+                        let c = 'none';
+                        if(item.classList.contains('text-green')) c = 'green';
+                        if(item.classList.contains('text-red')) c = 'red';
+                        return { text: item.textContent.trim(), color: c };
                     });
-                    cellValue = c2Values.length > 0 ? c2Values.join(', ') : 'Vide';
-                } else if (cellId === 'c3-cell') {
-                    const personneChecked = document.getElementById('personne-checkbox').checked;
-                    const xylophaseChecked = document.getElementById('xylophase-checkbox').checked;
-                    if (personneChecked) cellValue = 'Personne'; // Modification : plus court
-                    else if (xylophaseChecked) cellValue = 'Xylophase';
-                } else if (cellId === 'd1-cell') {
-                    cellValue = localStorage.getItem(D1_STORAGE_KEY) || 'Vide';
-                } else if (cell && cell.querySelector('.cell-value')) {
-                    const value = cell.querySelector('.cell-value').textContent;
-                    if (value !== 'Choisir' && value !== 'Locale' && value !== 'A4' && value !== 'B4' && value !== 'C4' && value !== 'D4' && value !== 'C2' && value !== 'C3' && value.trim() !== '') {
-                        cellValue = value;
+                    currentValue = JSON.stringify(locationsWithColor);
+                } else if (contentSpanC2) {
+                    currentValue = contentSpanC2.textContent.trim();
+                } else {
+                    currentValue = '';
+                }
+            } else if (contentSpan) {
+                currentValue = contentSpan.textContent.trim();
+                if (cell.classList.contains('text-green')) color = 'green';
+                else if (cell.classList.contains('text-red')) color = 'red';
+            } else if (contentButton) {
+                currentValue = contentButton.textContent.trim();
+            }
+
+            const initialText = cell.getAttribute('data-initial-text');
+            if (currentValue && currentValue !== initialText) {
+                results[id] = { value: currentValue, color: color };
+            }
+        });
+        localStorage.setItem('taskResults', JSON.stringify(results));
+    }
+
+    function loadResults() {
+        const savedResults = localStorage.getItem('taskResults');
+        if (savedResults) {
+            const results = JSON.parse(savedResults);
+            for (const id in results) {
+                const cell = document.getElementById(id);
+                if (!cell) continue;
+                
+                if (id === 'c2') {
+                    const value = results[id].value;
+                    try {
+                        const locationsWithColor = JSON.parse(value);
+                        if (Array.isArray(locationsWithColor)) {
+                            showC2LocationList();
+                            const container = cell.querySelector('.location-list');
+                            container.innerHTML = '';
+                            locationsWithColor.forEach(loc => {
+                                const locationItem = document.createElement('div');
+                                locationItem.className = 'location-item';
+                                locationItem.textContent = loc.text;
+                                if (loc.color === 'green') {
+                                    locationItem.classList.add('text-green');
+                                    locationItem.dataset.colorState = '1';
+                                } else if (loc.color === 'red') {
+                                    locationItem.classList.add('text-red');
+                                    locationItem.dataset.colorState = '2';
+                                } else {
+                                    locationItem.dataset.colorState = '0';
+                                }
+                                container.appendChild(locationItem);
+                            });
+                            updateC2BackgroundColor();
+                        } else {
+                            showC2Buttons();
+                            const contentSpan = document.createElement('span');
+                            contentSpan.className = 'cell-content';
+                            contentSpan.textContent = value;
+                            cell.innerHTML = '';
+                            cell.appendChild(contentSpan);
+                            // --> Réappliquer la couleur sauvegardée
+                            cell.classList.remove('text-green', 'text-red');
+                            if (results[id].color === 'green') cell.classList.add('text-green');
+                            else if (results[id].color === 'red') cell.classList.add('text-red');
+                        }
+                    } catch (e) {
+                        showC2Buttons();
+                        const contentSpan = document.createElement('span');
+                        contentSpan.className = 'cell-content';
+                        contentSpan.textContent = value;
+                        cell.innerHTML = '';
+                        cell.appendChild(contentSpan);
+                    }
+                } else {
+                    const contentSpan = cell.querySelector('.cell-content');
+                    const contentButton = cell.querySelector('button');
+                    if (contentSpan) {
+                        contentSpan.textContent = results[id].value;
+                        contentSpan.classList.remove('placeholder');
+                        if (results[id].color === 'green') cell.classList.add('text-green');
+                        else if (results[id].color === 'red') cell.classList.add('text-red');
+                    } else if (contentButton) {
+                        contentButton.textContent = results[id].value;
                     }
                 }
-                taskData[cellId] = cellValue;
-            });
+            }
+        }
+    }
+
+    function showC2Buttons() {
+        const c2Cell = document.getElementById('c2');
+        c2Cell.innerHTML = `
+            <div class="button-container">
+                <button class="choice-button" data-value="R">R</button>
+                <button class="choice-button" data-value="xR">xR</button>
+            </div>`;
+    }
+    
+    function showC2LocationList() {
+        const c2Cell = document.getElementById('c2');
+        c2Cell.innerHTML = `
+            <div class="location-container">
+                <div class="location-list"></div>
+                <div class="list-add-button" id="add-locale-c2">+</div>
+            </div>`;
+    }
+
+    function resetAll() {
+        const cellsToReset = ['a1', 'a2', 'a3', 'a4', 'b4', 'c2', 'c3', 'c4', 'd1', 'd4'];
+        cellsToReset.forEach(id => {
+            const cell = document.getElementById(id);
+            if (!cell) return;
+            if (id === 'c2') {
+                showC2Buttons();
+            } else if (id === 'a2' || id === 'a3') {
+                cell.innerHTML = `<button>${id === 'a2' ? 'Début' : 'Fin'}</button>`;
+            } else {
+                const initialText = cell.getAttribute('data-initial-text');
+                const contentSpan = cell.querySelector('.cell-content');
+                if (contentSpan) {
+                    contentSpan.textContent = initialText;
+                    contentSpan.classList.add('placeholder');
+                    contentSpan.classList.remove('default-user');
+                }
+            }
+            cell.classList.remove('text-green', 'text-red', 'default-user-active');
+        });
+        localStorage.removeItem('taskResults');
+        defaultUser = null; defaultUserExpiry = null; defaultLocale = null; defaultLocaleExpiry = null;
+        localStorage.removeItem('defaultUserD1'); localStorage.removeItem('defaultLocaleA1');
+        updateA1MenuWithDefaults();
+        updateD1MenuWithDefault();
+    }
+    
+    // --- Fonctions utilitaires ---
+    function createDropdownItem(text) { const i = document.createElement('div'); i.className = 'dropdown-item'; const s = document.createElement('span'); s.className = 'dropdown-item-content'; s.textContent = text; i.appendChild(s); return i; }
+    function showNotification(message, isCompletion = false) { const n = document.getElementById('notification-banner'); n.textContent = message; n.classList.add('show'); setTimeout(() => { n.classList.remove('show'); if (isCompletion) resetAll(); }, 2000); }
+    function manualRefresh() { resetAll(); showNotification('Toutes les cases ont été réinitialisées ! 🔄'); }
+    function updateResults() { saveResults(); }
+    function checkCompletion() { for (const id of requiredCells) { const cell = document.getElementById(id); if (!cell) return false; if (id === 'c2') { const contentSpan = cell.querySelector('.cell-content'); const locationList = cell.querySelector('.location-list'); if (!contentSpan && !locationList) return false; if (contentSpan && (contentSpan.textContent.trim() === 'R' || contentSpan.textContent.trim() === 'xR')) return true; if (locationList) { const locations = Array.from(locationList.querySelectorAll('.location-item')).map(item => item.textContent.trim()); if (locations.length > 0) return true; } } else { const initialText = cell.getAttribute('data-initial-text'); const contentSpan = cell.querySelector('.cell-content'); const contentButton = cell.querySelector('button'); let currentValue = contentSpan ? contentSpan.textContent.trim() : (contentButton ? contentButton.textContent.trim() : ''); if (!currentValue || currentValue === initialText) return false; } } showNotification('Tâche complète ! 🎉', true); return true; }
+
+    // Fonctions pour D1
+    function saveDefaultUser() { if (defaultUser) localStorage.setItem('defaultUserD1', JSON.stringify({ user: defaultUser, expiry: defaultUserExpiry })); }
+    function loadDefaultUser() { const d = localStorage.getItem('defaultUserD1'); if (d) { const u = JSON.parse(d); if (u.expiry > Date.now()) { defaultUser = u.user; defaultUserExpiry = u.expiry; const c = document.getElementById('d1'); c.querySelector('.cell-content').textContent = defaultUser; c.querySelector('.cell-content').classList.remove('placeholder'); c.querySelector('.cell-content').classList.add('default-user'); c.classList.add('default-user-active'); updateD1MenuWithDefault(); } else { localStorage.removeItem('defaultUserD1'); } } }
+    function setDefaultUser(name) { defaultUser = name; defaultUserExpiry = Date.now() + 28800000; const c = document.getElementById('d1'); c.querySelector('.cell-content').textContent = defaultUser; c.querySelector('.cell-content').classList.remove('placeholder'); c.querySelector('.cell-content').classList.add('default-user'); c.classList.add('default-user-active'); saveDefaultUser(); updateD1MenuWithDefault(); showNotification(`Utilisateur "${defaultUser}" défini par défaut pour 8h !`); }
+    function updateD1MenuWithDefault() { const m = document.querySelector('#d1 .dropdown-menu'); m.innerHTML = ''; if (defaultUser) { const i = createDropdownItem(`★ ${defaultUser} (par défaut)`); i.classList.add('default-user-item'); m.appendChild(i); } initialUsers.forEach(u => { if (u !== defaultUser) m.appendChild(createDropdownItem(u)); }); const a = createDropdownItem('+'); a.classList.add('add-item'); m.appendChild(a); }
+
+    // Fonctions pour A1 (nouvelles)
+    function saveDefaultLocale() { if (defaultLocale) localStorage.setItem('defaultLocaleA1', JSON.stringify({ locale: defaultLocale, expiry: defaultLocaleExpiry })); }
+    function loadDefaultLocale() { const d = localStorage.getItem('defaultLocaleA1'); if (d) { const l = JSON.parse(d); if (l.expiry > Date.now()) { defaultLocale = l.locale; defaultLocaleExpiry = l.expiry; const c = document.getElementById('a1'); c.querySelector('.cell-content').textContent = defaultLocale; c.querySelector('.cell-content').classList.remove('placeholder'); c.querySelector('.cell-content').classList.add('default-user'); c.classList.add('default-user-active'); updateA1MenuWithDefaults(); } else { localStorage.removeItem('defaultLocaleA1'); } } }
+    function setDefaultLocale(name) { defaultLocale = name; defaultLocaleExpiry = Date.now() + 28800000; const c = document.getElementById('a1'); c.querySelector('.cell-content').textContent = defaultLocale; c.querySelector('.cell-content').classList.remove('placeholder'); c.querySelector('.cell-content').classList.add('default-user'); c.classList.add('default-user-active'); saveDefaultLocale(); updateA1MenuWithDefaults(); showNotification(`Locale "${defaultLocale}" définie par défaut pour 8h !`); }
+    function updateA1MenuWithDefaults() { const m = document.querySelector('#a1 .dropdown-menu'); m.innerHTML = ''; if (defaultLocale) { const i = createDropdownItem(`★ ${defaultLocale} (par défaut)`); i.classList.add('default-locale-item'); m.appendChild(i); } initialLocales.forEach(l => { if (l !== defaultLocale) m.appendChild(createDropdownItem(l)); });  }
+
+    // --- Fonctions pour la C2 simplifiées ---
+    function handleRChoice(cell) {
+        cell.innerHTML = `<span class="cell-content">Chargement...</span>`;
+        setTimeout(() => {
+            showC2LocationList();
+            const locale = document.querySelector('#a1 .cell-content').textContent.trim();
+            const url = `${SCRIPT_URL}?locale=${encodeURIComponent(locale)}`;
             
-            taskData.timestamp = new Date().toLocaleString('fr-FR');
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    const container = cell.querySelector('.location-list');
+                    container.innerHTML = '';
+                    if (data.success && data.data.length > 0) {
+                        data.data.forEach(location => {
+                            const locationItem = document.createElement('div');
+                            locationItem.className = 'location-item';
+                            locationItem.textContent = location;
+                            locationItem.dataset.colorState = '0';
+                            container.appendChild(locationItem);
+                        });
+                    } else {
+                        const emptyItem = document.createElement('div');
+                        emptyItem.className = 'location-item empty';
+                        emptyItem.textContent = 'Pas de "OUI" pour cette locale';
+                        container.appendChild(emptyItem);
+                    }
+                })
+                .catch(error => {
+                    console.error('Erreur de connexion à l\'API:', error);
+                    const container = cell.querySelector('.location-list');
+                    container.innerHTML = '';
+                    const errorItem = document.createElement('div');
+                    errorItem.className = 'location-item empty';
+                    errorItem.textContent = 'Erreur réseau';
+                    container.appendChild(errorItem);
+                });
+        }, 300); // Délai de 300ms
+    }
+
+    function handleXRChoice(cell, value) {
+        cell.innerHTML = `<span class="cell-content">${value}</span>`;
+        cell.style.backgroundColor = '';
+        cell.classList.remove('text-green', 'text-red');
+        cell.dataset.locked = "true"; // Bloque la case
+        updateResults();
+        checkCompletion();
+    }
+
+    function handleListAdd(cell) {
+        const newLocation = prompt("Veuillez entrer le nom du nouvel endroit :");
+        if (newLocation && newLocation.trim()) {
+            let container = cell.querySelector('.location-list');
+            if (!container) {
+                showC2LocationList();
+                container = cell.querySelector('.location-list');
+            }
+            const newLocationItem = document.createElement('div');
+            newLocationItem.className = 'location-item';
+            newLocationItem.textContent = newLocation.trim();
+            newLocationItem.dataset.colorState = '0';
+            container.appendChild(newLocationItem);
+            updateResults();
+        }
+    }
+
+    function handleLocationItemClick(locationItem) {
+        let state = parseInt(locationItem.dataset.colorState || '0');
+        state = (state + 1) % 3;
+        locationItem.dataset.colorState = state;
+        locationItem.classList.remove('text-green', 'text-red');
+        if (state === 1) {
+            locationItem.classList.add('text-green');
+        } else if (state === 2) {
+            locationItem.classList.add('text-red');
+        }
+    
+        // Mise à jour immédiate, plus de timeout
+        updateC2BackgroundColor();
+        updateResults();
+        checkCompletion();
+    }
+    
+    function updateC2BackgroundColor() {
+        const c2Cell = document.getElementById('c2');
+        const locationItems = Array.from(c2Cell.querySelectorAll('.location-item'));
+        
+        c2Cell.classList.remove('text-green', 'text-red');
+        
+        if (locationItems.length > 0) {
+            const hasRed = locationItems.some(item => item.classList.contains('text-red'));
+            const hasGreen = locationItems.some(item => item.classList.contains('text-green'));
             
-            tasks.push(taskData);
-            localStorage.setItem(TASKS_STORAGE_KEY, JSON.stringify(tasks));
+            if (hasRed) {
+                c2Cell.classList.add('text-red');
+            } else if (hasGreen) {
+                c2Cell.classList.add('text-green');
+            }
+        }
+    }
+
+    // --- Configuration Initiale ---
+    updateA1MenuWithDefaults();
+    updateD1MenuWithDefault();
+    const c3Menu = document.querySelector('#c3 .dropdown-menu');
+    const xylophageItem = createDropdownItem('Xylophage');
+    xylophageItem.dataset.colorState = '0';
+    c3Menu.appendChild(xylophageItem);
+    ['#a4', '#b4', '#c4', '#d4'].forEach(cellId => { const menu = document.querySelector(`${cellId} .dropdown-menu`); ['Vide', '1', '2', '3'].forEach(opt => menu.appendChild(createDropdownItem(opt))); });
+    
+    showC2Buttons();
+    loadResults();
+    loadDefaultUser();
+    loadDefaultLocale();
+
+    // --- Gestionnaire d'Événements Principal ---
+    const grid = document.querySelector('.grid');
+    let activeMenu = null;
+    
+    document.addEventListener('click', function(event) {
+        const c2Cell = document.getElementById('c2');
+        const isClickInsideC2 = c2Cell.contains(event.target);
+    
+        if (!isClickInsideC2 && !c2Cell.dataset.locked) {
+            const locationListExists = c2Cell.querySelector('.location-list');
+            if (locationListExists) {
+                const locationItems = Array.from(c2Cell.querySelectorAll('.location-item'));
+                const hasRed = locationItems.some(item => item.classList.contains('text-red'));
+                const hasGreen = locationItems.some(item => item.classList.contains('text-green'));
+                c2Cell.innerHTML = `<span class="cell-content">R</span>`;
+                c2Cell.classList.remove('text-green', 'text-red');
+                if (hasRed) {
+                    c2Cell.classList.add('text-red');
+                } else if (hasGreen) {
+                    c2Cell.classList.add('text-green');
+                }
+                c2Cell.dataset.locked = "true"; // On bloque la case
+                updateResults();
+                checkCompletion();
+            }
+        }
+    });
+
+    grid.addEventListener('click', function(event) {
+        const cell = event.target.closest('.cell');
+        if (!cell || cell.classList.contains('empty-cell')) return;
+        if ((cell.id === 'd1' && cell.classList.contains('default-user-active')) || (cell.id === 'a1' && cell.classList.contains('default-user-active'))) return;
+
+        // === LOGIQUE DE GESTION DE LA CASE C2 ===
+        if (cell.id === 'c2') {
+            const choiceButton = event.target.closest('.choice-button');
+            const listAddButton = event.target.closest('.list-add-button');
+            const locationItem = event.target.closest('.location-item');
+
+            if (choiceButton) {
+                const value = choiceButton.getAttribute('data-value');
+                if (value === 'R') {
+                    handleRChoice(cell);
+                } else {
+                    handleXRChoice(cell, value);
+                }
+            } else if (listAddButton) {
+                handleListAdd(cell);
+            } else if (locationItem) {
+                handleLocationItemClick(locationItem);
+            } else if (cell.querySelector('.cell-content')) {
+                showC2Buttons();
+            }
+            return;
         }
 
-        function displayAllTasks() {
-            const resultsHeader = document.getElementById('results-header-row');
-            const resultsBody = document.getElementById('results-body');
-            resultsHeader.innerHTML = '';
-            resultsBody.innerHTML = '';
-            
-            const tasks = JSON.parse(localStorage.getItem(TASKS_STORAGE_KEY)) || [];
+        if (event.target.tagName === 'BUTTON') {
+            const timeString = new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+            const cellContent = cell.querySelector('.cell-content');
+            if (cellContent) {
+                cellContent.textContent = timeString;
+                cellContent.classList.remove('placeholder');
+            } else {
+                cell.innerHTML = `<span class="cell-content">${timeString}</span>`;
+            }
+            cell.style.cursor = 'default';
+            updateResults();
+            checkCompletion();
+            return;
+        }
 
-            if (tasks.length === 0) {
-                document.getElementById('results-container').style.display = 'none';
+        const dropdownItem = event.target.closest('.dropdown-item');
+        if (dropdownItem) {
+            const cellId = cell.id;
+            const contentSpan = cell.querySelector('.cell-content');
+
+            if (cellId === 'a1') { 
+                if (dropdownItem.classList.contains('add-item')) {
+                    const name = prompt("Veuillez entrer une nouvelle locale :"); 
+                    if (name && name.trim()) {
+                         const i = createDropdownItem(name.trim()); 
+                         initialLocales.push(name.trim()); 
+                         updateA1MenuWithDefaults(); 
+                         setDefaultLocale(name.trim());
+                    } 
+                    return; 
+                } else {
+                    setDefaultLocale(dropdownItem.textContent.replace(/^★ /, '').replace(/ \(par défaut\)$/, '')); 
+                    updateResults(); 
+                    checkCompletion(); 
+                    if (activeMenu) { activeMenu.classList.remove('show'); activeMenu = null; }
+                    return;
+                }
+            }
+
+            if (cellId === 'd1' && dropdownItem.classList.contains('add-item')) { 
+                const name = prompt("Veuillez entrer un nouveau prénom :"); 
+                if (name && name.trim()) { 
+                    const i = createDropdownItem(name.trim()); 
+                    initialUsers.push(name.trim());
+                    updateD1MenuWithDefault(); 
+                    setDefaultUser(name.trim());
+                } 
+                return; 
+            }
+            if (cellId === 'd1' && !dropdownItem.classList.contains('add-item')) { 
+                setDefaultUser(dropdownItem.textContent.replace(/^★ /, '').replace(/ \(par défaut\)$/, '')); 
+                updateResults(); 
+                checkCompletion(); 
+                if (activeMenu) { activeMenu.classList.remove('show'); activeMenu = null; }
+                return; 
+            }
+            if (cellId === 'c3') { 
+                const item = dropdownItem; 
+                const span = cell.querySelector('.cell-content'); 
+                let state = (parseInt(item.dataset.colorState || '0') + 1) % 3; 
+                item.dataset.colorState = state; 
+                item.classList.remove('text-green', 'text-red'); 
+                cell.classList.remove('text-green', 'text-red'); 
+                if (state === 1) { 
+                    item.classList.add('text-green'); 
+                    cell.classList.add('text-green'); 
+                } else if (state === 2) { 
+                    item.classList.add('text-red'); 
+                    cell.classList.add('text-red'); 
+                }
+                span.textContent = item.textContent.trim();
+                span.classList.remove('placeholder');
+                if (activeMenu) { activeMenu.classList.remove('show'); activeMenu = null; }
+                updateResults();
+                checkCompletion();
                 return;
             }
-            
-            document.getElementById('results-container').style.display = 'block';
-
-            // Entêtes de colonne
-            const headers = {
-                'a1-cell': 'N° Locale',
-                'a2-cell': 'Début',
-                'a3-cell': 'Fin',
-                'd1-cell': 'User',
-                'c2-cell': 'C2',
-                'c3-cell': 'C3',
-                'a4-cell': 'A4',
-                'b4-cell': 'B4',
-                'c4-cell': 'C4',
-                'd4-cell': 'D4'
-            };
-            const orderedCells = ['a1-cell', 'a2-cell', 'a3-cell', 'd1-cell', 'c2-cell', 'c3-cell', 'a4-cell', 'b4-cell', 'c4-cell', 'd4-cell'];
-
-            let headerRow = '<tr>';
-            orderedCells.forEach(cellId => {
-                headerRow += `<th>${headers[cellId] || cellId.replace('-cell','').toUpperCase()}</th>`;
-            });
-            headerRow += '</tr>';
-            resultsHeader.innerHTML = headerRow;
-
-            // Lignes de tableau
-            let bodyRows = '';
-            let lastDate = null;
-            tasks.forEach(task => {
-                if (task.type === 'day_change') {
-                    bodyRows += `<tr style="background-color:#f0f0f0;"><td colspan="10" style="text-align:center; font-weight:bold;">Journée : ${task.date}</td></tr>`;
-                    return;
+            contentSpan.textContent = dropdownItem.textContent.trim();
+            contentSpan.classList.remove('placeholder');
+            if (activeMenu) { activeMenu.classList.remove('show'); activeMenu = null; }
+            updateResults();
+            checkCompletion();
+        } else {
+            const dropdown = cell.querySelector('.dropdown-menu');
+            if (dropdown) {
+                if (activeMenu && activeMenu !== dropdown) {
+                    activeMenu.classList.remove('show');
                 }
-                
-                let bodyRow = '<tr>';
-                orderedCells.forEach(cellId => {
-                    bodyRow += `<td>${task[cellId] || 'Vide'}</td>`;
-                });
-                bodyRow += '</tr>';
-                bodyRows += bodyRow;
-            });
-            resultsBody.innerHTML = bodyRows;
-            
-            // Mise à jour de l'horodatage
-            const timestampElement = document.getElementById('results-timestamp');
-            timestampElement.textContent = `Dernière mise à jour: ${new Date().toLocaleDateString()} à ${new Date().toLocaleTimeString()}`;
-        }
-        
-        function closeResults() {
-            document.getElementById('results-container').style.display = 'none';
-        }
-
-        // --- NOUVELLE FONCTION : NOTIFICATION STYLÉE ---
-        function showNotification(message, color) {
-            const notificationDiv = document.getElementById('notification');
-            notificationDiv.textContent = message;
-            notificationDiv.classList.remove('green', 'red');
-            notificationDiv.classList.add(color);
-            notificationDiv.style.display = 'block';
-            setTimeout(() => {
-                notificationDiv.style.display = 'none';
-            }, 3000);
-        }
-        
-        // --- LOGIQUE DU WORKFLOW ---
-        function activateNextStep(initial = false) {
-            deactivateAllCells();
-            if (!initial) {
-                workflowState++;
-            }
-            
-            const instructionDiv = document.getElementById('instruction');
-            instructionDiv.style.display = 'block';
-            
-            const storedD1 = localStorage.getItem(D1_STORAGE_KEY);
-            const d1Expiry = localStorage.getItem(D1_EXPIRY_KEY);
-
-            if (initial && storedD1 && d1Expiry && Date.now() < d1Expiry) {
-                workflowState = 1;
-            }
-
-            switch(workflowState) {
-                case 0:
-                    document.getElementById('d1-cell').classList.remove('inactive-cell');
-                    document.getElementById('d1-cell').classList.add('active-cell');
-                    instructionDiv.textContent = "Commencez par sélectionner une valeur dans D1 (Choisir)";
-                    break;
-                case 1:
-                    document.getElementById('a2-cell').classList.remove('inactive-cell');
-                    document.getElementById('a2-cell').classList.add('active-cell');
-                    instructionDiv.textContent = "Cliquez sur 'Début du tache'";
-                    break;
-                case 2:
-                    checkA1DisabledState();
-                    document.getElementById('a1-cell').classList.remove('inactive-cell');
-                    document.getElementById('a1-cell').classList.add('active-cell');
-                    instructionDiv.textContent = "Sélectionnez une valeur dans A1 (Locale)";
-                    break;
-                case 3:
-                    document.getElementById('c2-cell').classList.remove('inactive-cell');
-                    document.getElementById('c2-cell').classList.add('active-cell');
-                    instructionDiv.textContent = "Faites un choix (Vert/Rouge) pour chaque option dans C2";
-                    break;
-                case 4:
-                    document.getElementById('c3-cell').classList.remove('inactive-cell');
-                    document.getElementById('c3-cell').classList.add('active-cell');
-                    instructionDiv.textContent = "Faites un choix dans C3";
-                    break;
-                case 5:
-                    // Activer toutes les cases facultatives en même temps avec le style vert
-                    activateFacultativeCells();
-                    break;
-                case 6:
-                    document.getElementById('a3-cell').classList.remove('inactive-cell');
-                    document.getElementById('a3-cell').classList.add('active-cell');
-                    instructionDiv.textContent = "Cliquez sur 'Fin du tache' pour terminer";
-                    break;
-                default:
-                    instructionDiv.style.display = 'none';
+                dropdown.classList.toggle('show');
+                activeMenu = dropdown.classList.contains('show') ? dropdown : null;
             }
         }
+    });
 
-        // Nouvelle fonction pour activer toutes les cases facultatives en vert
-        function activateFacultativeCells() {
-            deactivateAllCells();
-            workflowCells.forEach(cellId => {
-                const cell = document.getElementById(cellId);
-                cell.classList.remove('inactive-cell');
-                cell.classList.add('active-cell', 'facultative-zone');
-            });
-            document.getElementById('a3-cell').classList.remove('inactive-cell');
-            document.getElementById('a3-cell').classList.add('active-cell');
-            document.getElementById('instruction').textContent = "Sélectionnez les valeurs pour les cases facultatives (A4, B4, C4, D4) ou terminez avec A3";
-            
-            // Afficher la zone de sélection verte
-            document.getElementById('timer-display').textContent = "Sélectionnez les cases facultatives ou terminez";
-            document.getElementById('timer-display').style.display = 'block';
-        }
-
-        function deactivateAllCells() {
-            const cells = document.querySelectorAll('.cell:not(.transparent-cell)');
-            cells.forEach(cell => {
-                cell.classList.remove('active-cell', 'selected-cell', 'facultative-zone');
-                cell.classList.add('inactive-cell');
-            });
-        }
-
-        // --- FONCTIONS DES MENUS DÉROULANTS ---
-        function toggleDropdown(cell) {
-            let dropdown = cell.querySelector(".dropdown");
-            if (!dropdown) return;
-            
-            let isVisible = dropdown.style.display === "block";
-            document.querySelectorAll(".dropdown").forEach(d => d.style.display = "none");
-            dropdown.style.display = isVisible ? "none" : "block";
-        }
-
-        function chooseValue(optionDiv, specialValue = null) {
-            if (optionDiv.classList.contains('disabled')) return;
-
-            let cell = optionDiv.closest(".cell");
-            let valueDisplay = cell.querySelector(".cell-value");
-            if (!valueDisplay) return;
-            
-            let oldValue = valueDisplay.textContent.trim(); // Stocke l'ancienne valeur
-            let value = specialValue ? specialValue : optionDiv.textContent.trim();
-            valueDisplay.textContent = value;
-            
-            if (cell.id === 'd1-cell') {
-                localStorage.setItem(D1_STORAGE_KEY, value);
-                localStorage.setItem(D1_EXPIRY_KEY, Date.now() + EIGHT_HOURS);
-            } else if (cell.id === 'a1-cell') {
-                const disabledOptions = JSON.parse(localStorage.getItem(A1_DISABLED_OPTIONS_KEY)) || {};
-                disabledOptions[value] = Date.now() + EIGHT_HOURS;
-                localStorage.setItem(A1_DISABLED_OPTIONS_KEY, JSON.stringify(disabledOptions));
-                checkA1DisabledState();
-                
-                // --- NOUVELLE FONCTION : RÉINITIALISATION DU WORKFLOW LORSQUE A1 CHANGE ---
-                if (oldValue !== 'Locale' && oldValue !== value) {
-                    showNotification('Nouvelle tâche', 'green'); // Notification stylée
-                    // Réinitialisation de tout le workflow
-                    workflowState = 0;
-                    currentCellIndex = 0;
-                    c2CompletedOptions.clear();
-                    timeLeft = 7;
-                    clearInterval(timer);
-                    document.getElementById('timer-display').style.display = 'none';
-                    
-                    document.querySelector('#c2-cell .cell-value').textContent = 'C2';
-                    document.querySelector('#c3-cell .cell-value').textContent = 'C3';
-                    document.querySelector('#a4-cell .cell-value').textContent = 'A4';
-                    document.querySelector('#b4-cell .cell-value').textContent = 'B4';
-                    document.querySelector('#c4-cell .cell-value').textContent = 'C4';
-                    document.querySelector('#d4-cell .cell-value').textContent = 'D4';
-                    resetC2();
-                    resetC3();
-
-                    // Sauvegarde la tâche précédente si elle était en cours
-                    saveTaskResult();
-                    displayAllTasks();
-                    
-                    activateNextStep();
-                    return;
-                }
-            }
-
-            toggleDropdown(cell);
-
-            const cellId = cell.id;
-            if (cellId === 'd1-cell' || cellId === 'a1-cell') {
-                setTimeout(activateNextStep, 200);
-            } else if (workflowCells.includes(cellId)) {
-                cell.classList.add('selected-cell');
-                // Vérifier si toutes les cases facultatives sont sélectionnées
-                checkFacultativeCompletion();
-            }
-        }
-        
-        // Nouvelle fonction pour vérifier si toutes les cases facultatives sont sélectionnées
-        function checkFacultativeCompletion() {
-            let allSelected = true;
-            for (let i = 0; i < workflowCells.length; i++) {
-                const cell = document.getElementById(workflowCells[i]);
-                if (!cell.classList.contains('selected-cell') && 
-                    cell.querySelector('.cell-value').textContent === workflowCells[i].toUpperCase().replace('-CELL', '')) {
-                    allSelected = false;
-                    break;
-                }
-            }
-            
-            if (allSelected) {
-                document.getElementById('timer-display').style.display = 'none';
-                setTimeout(activateNextStep, 200);
-            }
-        }
-        
-        // --- GESTION DU TIMER POUR LES CASES A4-D4 ---
-        function startTimer() {
-            // Supprimé car nous n'utilisons plus de timer
-        }
-        
-        function updateTimerDisplay() {
-            // Supprimé car nous n'utilisons plus de timer
-        }
-
-        // --- LOGIQUE SPÉCIFIQUE À C2 et C3 ---
-        function updateTextColor(option, color) {
-            const textElement = document.getElementById(`${option}-text`);
-            textElement.classList.remove('text-red', 'text-green');
-            if (color === 'red') textElement.classList.add('text-red');
-            else if (color === 'green') textElement.classList.add('text-green');
-
-            const vertCheckbox = document.getElementById(`${option}-vert`);
-            const rougeCheckbox = document.getElementById(`${option}-rouge`);
-            if (color === 'red' && rougeCheckbox.checked) vertCheckbox.checked = false;
-            else if (color === 'green' && vertCheckbox.checked) rougeCheckbox.checked = false;
-            
-            if(vertCheckbox.checked || rougeCheckbox.checked) {
-                c2CompletedOptions.add(option);
-            } else {
-                c2CompletedOptions.delete(option);
-            }
-            checkC2Completion();
-        }
-
-        function checkC2Completion() {
-            if (c2CompletedOptions.size === c2TotalOptions) {
-                setTimeout(activateNextStep, 200);
-            }
-        }
-
-        function resetC2() {
-            const options = ['chambre', 'cuisine', 'terrasse', 'autre'];
-            options.forEach(option => {
-                const textElement = document.getElementById(`${option}-text`);
-                textElement.classList.remove('text-red', 'text-green');
-                document.getElementById(`${option}-vert`).checked = false;
-                document.getElementById(`${option}-rouge`).checked = false;
-            });
-        }
-        
-        function updateC3TextColor(option) {
-            const personneChecked = document.getElementById('personne-checkbox').checked;
-            const xylophaseChecked = document.getElementById('xylophase-checkbox').checked;
-
-            if (personneChecked) {
-                document.getElementById('xylophase-checkbox').checked = false;
-            }
-            if (xylophaseChecked) {
-                document.getElementById('personne-checkbox').checked = false;
-            }
-
-            // Avancer vers la prochaine étape si une option est sélectionnée
-            if (personneChecked || xylophaseChecked) {
-                setTimeout(activateNextStep, 200);
-            }
-        }
-        
-        function resetC3() {
-            document.getElementById('personne-checkbox').checked = false;
-            document.getElementById('xylophase-checkbox').checked = false;
-        }
-
-    </script>
+    document.getElementById('refresh-button').addEventListener('click', manualRefresh);
+    });
+</script>
 </body>
 </html>
