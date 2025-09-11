@@ -5,7 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Matrice 4x4 - Gestion de Tâche</title>
     <style>
-    :root {
+        /* style.css */
+:root {
     --primary-color: #0056b3;
     --primary-hover-color: #00448a;
     --success-color: #28a745;
@@ -16,398 +17,408 @@
     --bg-color: #f8f9fa;
     --card-bg-color: #ffffff;
     --shadow-light: 0 2px 8px rgba(0, 0, 0, 0.05);
-    }
+}
 
-    body {
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-        background-color: var(--bg-color);
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        min-height: 10vh;
-        margin: 0;
-        padding: 20px;
-    }
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background-color: var(--bg-color);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    min-height: 10vh;
+    margin: 0;
+    padding: 20px;
+}
 
-    .container {
-        width: 100%;
-        max-width: 700px;
-        background: var(--card-bg-color);
-        padding: 25px;
-        border-radius: 16px;
-        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
-    }
+.container {
+    width: 100%;
+    max-width: 700px;
+    background: var(--card-bg-color);
+    padding: 25px;
+    border-radius: 16px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+}
 
-    h1 {
-        text-align: center;
-        color: var(--primary-color);
-        margin-bottom: 25px;
-        font-size: 1.8rem;
-        font-weight: 600;
-    }
+h1 {
+    text-align: center;
+    color: var(--primary-color);
+    margin-bottom: 25px;
+    font-size: 1.8rem;
+    font-weight: 600;
+}
 
-    .grid {
-        display: grid;
-        grid-template-columns: repeat(4, 1fr);
-        gap: 12px;
-    }
+.grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+}
 
-    .cell {
-        position: relative;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        aspect-ratio: 1/1;
-        border: 1px solid var(--border-color);
-        border-radius: 10px;
-        font-size: 15px;
-        color: var(--text-color);
-        background-color: var(--card-bg-color);
-        cursor: pointer;
-        transition: all 0.2s ease-in-out;
-        padding: 10px;
-        text-align: center;
-        word-break: break-word;
-    }
-    /* Styles responsives et ajustement de la taille de police */
+.cell {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    aspect-ratio: 1/1;
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    font-size: 15px;
+    color: var(--text-color);
+    background-color: var(--card-bg-color);
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+    padding: 10px;
+    text-align: center;
+    word-break: break-word;
+}
+
+/* Styles responsives et ajustement de la taille de police */
 .cell-content {
-    font-size: 12px; /* Taille réduite */
+    font-size: 12px;
     font-weight: 500;
     text-align: center;
-    padding: 6px 4px; /* Padding réduit */
+    padding: 6px 4px;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
 }
 
+/* Ajustement spécifique pour le texte "Sélectionnez Locale" */
+.placeholder-text {
+    font-size: 11px !important;
+    color: #888;
+    font-style: italic;
+}
+
+/* Réduction de la taille des menus déroulants */
+.locale-dropdown {
+    font-size: 12px;
+    padding: 6px 8px;
+}
+
+/* Ajustement des boutons */
+.action-button {
+    font-size: 11px;
+    padding: 5px 8px;
+}
+
+/* Pour les listes de localisation dans C2 */
+.location-item {
+    font-size: 11px;
+    padding: 4px 6px;
+}
+
+/* Header plus compact */
+.grid-header {
+    font-size: 12px;
+    padding: 8px 4px;
+}
+
+/* Ajustement global du conteneur */
+.grid-container {
+    max-width: 100%;
+    margin: 0 auto;
+    padding: 15px;
+    box-sizing: border-box;
+}
+
 /* Adaptation responsive pour les écrans plus petits */
 @media (max-width: 768px) {
     .cell-content {
-        font-size: 11px; /* Encore plus petit sur mobile */
+        font-size: 11px;
         padding: 4px 2px;
     }
     
-    .grid-container {
-        gap: 8px; /* Espacement réduit entre les cellules */
-        padding: 10px;
+    .grid {
+        gap: 8px;
     }
     
     .cell {
-        min-height: 35px; /* Hauteur réduite */
+        min-height: 35px;
+        padding: 6px;
     }
     
-    /* Ajustement spécifique pour le texte "Sélectionnez Locale" */
-    .placeholder-text {
-        font-size: 11px !important;
-        color: #888;
-        font-style: italic;
-    }
-    
-    /* Réduction de la taille des menus déroulants */
-    .locale-dropdown {
-        font-size: 12px;
-        padding: 6px 8px;
-    }
-    
-    /* Ajustement des boutons */
-    .action-button {
-        font-size: 11px;
-        padding: 5px 8px;
-    }
-    
-    /* Pour les listes de localisation dans C2 */
-    .location-item {
-        font-size: 11px;
-        padding: 4px 6px;
-    }
-    
-    /* Header plus compact */
-    .grid-header {
-        font-size: 12px;
-        padding: 8px 4px;
-    }
-    
-    /* Ajustement global du conteneur */
-    .grid-container {
-        max-width: 100%;
-        margin: 0 auto;
+    .container {
         padding: 15px;
-        box-sizing: border-box;
-    }    
-    .cell#c2 {
-        display: block;
-        padding: 8px;
-    }
-
-    .cell:hover:not(.empty-cell):not(.default-user-active) {
-        border-color: var(--primary-color);
-        box-shadow: var(--shadow-light);
-    }
-
-    .empty-cell {
-        background-color: var(--bg-color);
-        border: 1px dashed var(--border-color);
-        cursor: default;
-    }
-
-    .cell-content {
-        font-weight: 500;
-        color: var(--text-color);
-    }
-
-    .cell-content.placeholder {
-        font-style: italic;
-        color: var(--secondary-text-color);
-    }
-
-    .cell button {
-        width: 100%;
-        height: 100%;
-        border: none;
-        background: var(--primary-color);
-        color: white;
-        border-radius: 8px;
-        cursor: pointer;
-        font-size: 13px;
-        font-weight: bold;
-        transition: background-color 0.2s;
-        padding: 5px;
-    }
-
-    .cell button:hover {
-        background: var(--primary-hover-color);
-    }
-
-    .cell .button-container {
-        display: flex;
-        gap: 8px;
-        width: 100%;
-        height: 100%;
-        justify-content: center;
-        align-items: center;
-    }
-
-    .cell .choice-button {
-        flex-grow: 1;
-        height: 80%;
-        background: var(--bg-color);
-        color: var(--primary-color);
-        border: 1px solid var(--primary-color);
-        border-radius: 8px;
-        font-size: 16px;
-        font-weight: bold;
-        transition: all 0.2s;
-    }
-
-    .cell .choice-button:hover {
-        background: var(--primary-color);
-        color: white;
-    }
-
-    /* Styles pour la liste des lieux */
-    .location-container {
-        display: flex;
-        flex-direction: column;
-        width: 100%;
-        height: 100%;
-    }
-
-    .location-list {
-        display: flex;
-        flex-direction: column;
-        gap: 6px;
-        padding: 0;
-        width: 100%;
-        flex-grow: 1;
-        overflow-y: auto;
-        margin-bottom: 6px;
     }
     
-
-    .location-item {
-        padding: 8px 10px;
-        border: 1px solid var(--border-color);
-        border-radius: 8px;
-        background-color: var(--card-bg-color);
-        font-size: 14px;
-        text-align: center;
-        cursor: pointer;
-        transition: all 0.2s ease-in-out;
-    }
-
-    .location-item:hover {
-        background-color: #e9ecef;
-    }
-
-    .location-item.empty {
-        font-style: italic;
-        color: var(--secondary-text-color);
-    }
-
-    .list-add-button {
-        display: block;
-        width: 100%;
-        padding: 4px 6px; /* Taille réduite */
-        border: 1px solid var(--border-color);
-        border-radius: 8px;
-        background-color: var(--primary-color);
-        color: white;
-        font-weight: bold;
-        font-size: 14px; /* Taille de police réduite */
-        text-align: center;
-        cursor: pointer;
-        transition: background-color 0.2s;
-        line-height: 1; 
-    }
-    
-    .list-add-button:hover {
-        background-color: var(--primary-hover-color);
-    }
-
-    .add-button {
-        width: 100%;
-        padding: 8px;
-        background-color: var(--primary-color);
-        color: white;
-        border: none;
-        border-radius: 8px;
-        font-weight: bold;
-        cursor: pointer;
-        transition: background-color 0.2s;
-        margin-top: 8px;
+    h1 {
         font-size: 1.5rem;
-        line-height: 1;
     }
+}
 
-    .add-button:hover {
-        background-color: var(--primary-hover-color);
-    }
+.cell#c2 {
+    display: block;
+    padding: 8px;
+}
 
-    .dropdown-menu {
-        display: none;
-        position: absolute;
-        top: calc(100% + 5px);
-        left: 0;
-        width: 100%;
-        background-color: var(--card-bg-color);
-        border: 1px solid var(--border-color);
-        border-radius: 10px;
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-        z-index: 10;
-        max-height: 200px;
-        overflow-y: auto;
-    }
+.cell:hover:not(.empty-cell):not(.default-user-active) {
+    border-color: var(--primary-color);
+    box-shadow: var(--shadow-light);
+}
 
-    .dropdown-menu.show { display: block; }
-    .dropdown-item { padding: 12px 15px; cursor: pointer; border-bottom: 1px solid var(--border-color); transition: background-color 0.2s; display: flex; justify-content: space-between; align-items: center; font-size: 14px; }
-    .dropdown-item:last-child { border-bottom: none; }
-    .dropdown-item:hover { background-color: var(--bg-color); }
-    .dropdown-item-content { flex-grow: 1; }
+.empty-cell {
+    background-color: var(--bg-color);
+    border: 1px dashed var(--border-color);
+    cursor: default;
+}
 
-    .add-item {
-        font-size: 1.2rem;
-        padding: 8px 15px;
-        color: var(--primary-color);
-        font-weight: bold;
-        text-align: center;
-    }
+.cell-content {
+    font-weight: 500;
+    color: var(--text-color);
+}
 
-    .text-green {
-        color: #28a745;
-        font-weight: bold;
-    }
+.cell-content.placeholder {
+    font-style: italic;
+    color: var(--secondary-text-color);
+}
 
-    .text-red {
-        color: #dc3545;
-        font-weight: bold;
-    }
+.cell button {
+    width: 100%;
+    height: 100%;
+    border: none;
+    background: var(--primary-color);
+    color: white;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: bold;
+    transition: background-color 0.2s;
+    padding: 5px;
+}
 
-    .default-user {
-        opacity: 0.8;
-        font-style: italic;
-        font-weight: 500;
-    }
+.cell button:hover {
+    background: var(--primary-hover-color);
+}
 
-    .default-user-active {
-        cursor: default;
-        background-color: #e9f0f6;
-        border-color: var(--primary-color);
-    }
+.cell .button-container {
+    display: flex;
+    gap: 8px;
+    width: 100%;
+    height: 100%;
+    justify-content: center;
+    align-items: center;
+}
 
-    #refresh-button {
-        margin-top: 25px;
-        padding: 12px 25px;
-        background-color: var(--success-color);
-        color: white;
-        border: none;
-        border-radius: 8px;
-        font-size: 16px;
-        font-weight: bold;
-        cursor: pointer;
-        transition: background-color 0.2s, transform 0.2s;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    }
+.cell .choice-button {
+    flex-grow: 1;
+    height: 80%;
+    background: var(--bg-color);
+    color: var(--primary-color);
+    border: 1px solid var(--primary-color);
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: bold;
+    transition: all 0.2s;
+}
 
-    #refresh-button:hover {
-        background-color: var(--success-hover-color);
-        transform: translateY(-2px);
-    }
+.cell .choice-button:hover {
+    background: var(--primary-color);
+    color: white;
+}
 
-    #notification-banner {
-        position: fixed;
-        top: 20px;
-        left: 50%;
-        transform: translateX(-50%);
-        padding: 12px 25px;
-        background-color: var(--success-color);
-        color: white;
-        font-weight: bold;
-        font-size: 16px;
-        border-radius: 8px;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-        z-index: 100;
-        opacity: 0;
-        visibility: hidden;
-        transition: opacity 0.5s ease-in-out, visibility 0.5s;
-        pointer-events: none;
-        max-width: 90%;
-        text-align: center;
-    }
+/* Styles pour la liste des lieux */
+.location-container {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+}
 
-    #notification-banner.show {
-        opacity: 1;
-        visibility: visible;
-    }
+.location-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 0;
+    width: 100%;
+    flex-grow: 1;
+    overflow-y: auto;
+    margin-bottom: 6px;
+}
 
-    /* Scrollbar Style */
-    ::-webkit-scrollbar {
-        width: 8px;
-    }
+.location-item {
+    padding: 8px 10px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background-color: var(--card-bg-color);
+    font-size: 14px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+}
 
-    ::-webkit-scrollbar-track {
-        background: #f1f1f1;
-        border-radius: 10px;
-    }
+.location-item:hover {
+    background-color: #e9ecef;
+}
 
-    ::-webkit-scrollbar-thumb {
-        background: #c0c0c0;
-        border-radius: 10px;
-    }
+.location-item.empty {
+    font-style: italic;
+    color: var(--secondary-text-color);
+}
 
-    ::-webkit-scrollbar-thumb:hover {
-        background: #a0a0a0;
-    }
-    #c2.text-green {
+.list-add-button {
+    display: block;
+    width: 100%;
+    padding: 4px 6px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background-color: var(--primary-color);
+    color: white;
+    font-weight: bold;
+    font-size: 14px;
+    text-align: center;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    line-height: 1; 
+}
+
+.list-add-button:hover {
+    background-color: var(--primary-hover-color);
+}
+
+.add-button {
+    width: 100%;
+    padding: 8px;
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    margin-top: 8px;
+    font-size: 1.5rem;
+    line-height: 1;
+}
+
+.add-button:hover {
+    background-color: var(--primary-hover-color);
+}
+
+.dropdown-menu {
+    display: none;
+    position: absolute;
+    top: calc(100% + 5px);
+    left: 0;
+    width: 100%;
+    background-color: var(--card-bg-color);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    z-index: 10;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.dropdown-menu.show { display: block; }
+.dropdown-item { padding: 12px 15px; cursor: pointer; border-bottom: 1px solid var(--border-color); transition: background-color 0.2s; display: flex; justify-content: space-between; align-items: center; font-size: 14px; }
+.dropdown-item:last-child { border-bottom: none; }
+.dropdown-item:hover { background-color: var(--bg-color); }
+.dropdown-item-content { flex-grow: 1; }
+
+.add-item {
+    font-size: 1.2rem;
+    padding: 8px 15px;
+    color: var(--primary-color);
+    font-weight: bold;
+    text-align: center;
+}
+
+.text-green {
+    color: #28a745;
+    font-weight: bold;
+}
+
+.text-red {
+    color: #dc3545;
+    font-weight: bold;
+}
+
+.default-user {
+    opacity: 0.8;
+    font-style: italic;
+    font-weight: 500;
+}
+
+.default-user-active {
+    cursor: default;
+    background-color: #e9f0f6;
+    border-color: var(--primary-color);
+}
+
+#refresh-button {
+    margin-top: 25px;
+    padding: 12px 25px;
+    background-color: var(--success-color);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.2s, transform 0.2s;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+#refresh-button:hover {
+    background-color: var(--success-hover-color);
+    transform: translateY(-2px);
+}
+
+#notification-banner {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 12px 25px;
+    background-color: var(--success-color);
+    color: white;
+    font-weight: bold;
+    font-size: 16px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    z-index: 100;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.5s ease-in-out, visibility 0.5s;
+    pointer-events: none;
+    max-width: 90%;
+    text-align: center;
+}
+
+#notification-banner.show {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Scrollbar Style */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #c0c0c0;
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #a0a0a0;
+}
+#c2.text-green {
     background-color: #d4edda !important;
     color: #155724 !important;
-    }
-    #c2.text-red {
-        background-color: #f8d7da !important;
-        color: #721c24 !important;
-    }
-    #c2 .cell-content {
+}
+#c2.text-red {
+    background-color: #f8d7da !important;
+    color: #721c24 !important;
+}
+#c2 .cell-content {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -415,109 +426,112 @@
     font-size: 1.6em;
     font-weight: bold;
     text-align: center;
-    }
+}
 
-    @media (max-width: 768px) {
-        .container {
-            padding: 15px;
-        }
-        h1 {
-            font-size: 1.5rem;
-        }
-        .grid {
-            gap: 10px;
-        }
-        .cell {
-            font-size: 13px;
-            padding: 8px;
-        }
-        .cell button {
-            font-size: 12px;
-        }
-        .choice-button {
-            font-size: 14px !important;
-        }
-        .location-item, .dropdown-item {
-            font-size: 13px;
-            padding: 10px;
-        }
-        #refresh-button {
-            padding: 10px 20px;
-            font-size: 14px;
-        }
+@media (max-width: 768px) {
+    .container {
+        padding: 15px;
     }
+    h1 {
+        font-size: 1.5rem;
+    }
+    .grid {
+        gap: 10px;
+    }
+    .cell {
+        font-size: 13px;
+        padding: 8px;
+    }
+    .cell button {
+        font-size: 12px;
+    }
+    .choice-button {
+        font-size: 14px !important;
+    }
+    .location-item, .dropdown-item {
+        font-size: 13px;
+        padding: 10px;
+    }
+    #refresh-button {
+        padding: 10px 20px;
+        font-size: 14px;
+    }
+}
     </style>
 </head>
 <body>
+    <div id="notification-banner">Tâche complète ! 🎉</div>
 
-<div id="notification-banner">Tâche complète ! 🎉</div>
-
-<div class="container">
-    <h1>Gestion des Tâches</h1>
-    <div class="grid">
-        <div class="cell" id="a1" data-initial-text="Locale">
-            <span class="cell-content placeholder">Local</span>
-            <div class="dropdown-menu"></div>
+    <div class="container">
+        <h1>Gestion des Tâches</h1>
+        <div class="grid">
+            <div class="cell" id="a1" data-initial-text="Locale">
+                <span class="cell-content placeholder">Local</span>
+                <div class="dropdown-menu"></div>
+            </div>
+            <div class="cell empty-cell" id="b1"></div>
+            <div class="cell empty-cell" id="c1"></div>
+            <div class="cell" id="d1" data-initial-text="Utilisateur">
+                <span class="cell-content placeholder">Utilisateur</span>
+                <div class="dropdown-menu"></div>
+            </div>
+            <div class="cell" id="a2" data-initial-text="Début Tâche">
+                <button>Début</button>
+            </div>
+            <div class="cell empty-cell" id="b2"></div>
+            <div class="cell" id="c2" data-initial-text=""></div>
+            <div class="cell empty-cell" id="d2"></div>
+            <div class="cell" id="a3" data-initial-text="Fin Tâche">
+                <button>Fin</button>
+            </div>
+            <div class="cell empty-cell" id="b3"></div>
+            <div class="cell" id="c3" data-initial-text="Contrôle Xylophage">
+                <span class="cell-content placeholder">Contrôle Xylophage</span>
+                <div class="dropdown-menu"></div>
+            </div>
+            <div class="cell empty-cell" id="d3"></div>
+            <div class="cell" id="a4" data-initial-text="Note">
+                <span class="cell-content placeholder">A4</span>
+                <div class="dropdown-menu"></div>
+            </div>
+            <div class="cell" id="b4" data-initial-text="Note">
+                <span class="cell-content placeholder">B4</span>
+                <div class="dropdown-menu"></div>
+            </div>
+            <div class="cell" id="c4" data-initial-text="Note">
+                <span class="cell-content placeholder">C4</span>
+                <div class="dropdown-menu"></div>
+            </div>
+            <div class="cell" id="d4" data-initial-text="Note">
+                <span class="cell-content placeholder">D4</span>
+                <div class="dropdown-menu"></div>
+            </div>
         </div>
-        <div class="cell empty-cell" id="b1"></div>
-        <div class="cell empty-cell" id="c1"></div>
-        <div class="cell" id="d1" data-initial-text="Utilisateur">
-            <span class="cell-content placeholder">Utilisateur</span>
-            <div class="dropdown-menu"></div>
-        </div>
-        <div class="cell" id="a2" data-initial-text="Début Tâche">
-            <button>Début</button>
-        </div>
-        <div class="cell empty-cell" id="b2"></div>
-        <div class="cell" id="c2" data-initial-text=""></div>
-        <div class="cell empty-cell" id="d2"></div>
-        <div class="cell" id="a3" data-initial-text="Fin Tâche">
-            <button>Fin</button>
-        </div>
-        <div class="cell empty-cell" id="b3"></div>
-        <div class="cell" id="c3" data-initial-text="Contrôle Xylophage">
-            <span class="cell-content placeholder">Contrôle Xylophage</span>
-            <div class="dropdown-menu"></div>
-        </div>
-        <div class="cell empty-cell" id="d3"></div>
-        <div class="cell" id="a4" data-initial-text="Note">
-            <span class="cell-content placeholder">A4</span>
-            <div class="dropdown-menu"></div>
-        </div>
-        <div class="cell" id="b4" data-initial-text="Note">
-            <span class="cell-content placeholder">B4</span>
-            <div class="dropdown-menu"></div>
-        </div>
-        <div class="cell" id="c4" data-initial-text="Note">
-            <span class="cell-content placeholder">C4</span>
-            <div class="dropdown-menu"></div>
-        </div>
-        <div class="cell" id="d4" data-initial-text="Note">
-            <span class="cell-content placeholder">D4</span>
-            <div class="dropdown-menu"></div>
-        </div>
+        <button id="refresh-button">🔄 Actualiser toutes les cases</button>
     </div>
-    <button id="refresh-button">🔄 Actualiser toutes les cases</button>
-</div>
 
-<script>
+    <script>
+        // your code goes here
+// script.js
 document.addEventListener('DOMContentLoaded', function() {
     
+    // Configuration et variables globales
     const initialUsers = ['Anniva', 'Tina'];
     let initialLocales = ['P1', 'P2', 'P3', 'P4', 'P5', 'P6', 'P7', 'P8', 'P9', 'P10'];
     let defaultUser = null, defaultUserExpiry = null;
     const requiredCells = ['a1', 'a2', 'a3', 'c2', 'c3', 'd1'];
-    let clickTimeout = null;
-
-    // L'URL de votre application web Google Apps Script.
+    let activeMenu = null;
     const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz7NrE1iwl4vthz2Sxx3DIOoRXrSkq8nolvjefXo-w-KdBaP948MGa19hRanVgR5EQK/exec';
 
+    // Fonctions de gestion des données
     function saveResults() {
         const results = {};
         const cellsToSave = ['a1', 'a2', 'a3', 'a4', 'b4', 'c2', 'c3', 'c4', 'd1', 'd4'];
+        
         cellsToSave.forEach(id => {
             const cell = document.getElementById(id);
             if (!cell) return;
+            
             const contentSpan = cell.querySelector('.cell-content');
             const contentButton = cell.querySelector('button:not(.choice-button)');
             let currentValue = '', color = '';
@@ -525,6 +539,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (id === 'c2') {
                 const locationList = cell.querySelector('.location-list');
                 const contentSpanC2 = cell.querySelector('.cell-content');
+                
                 if (locationList) {
                     const locationsWithColor = Array.from(locationList.querySelectorAll('.location-item')).map(item => {
                         let c = 'none';
@@ -551,6 +566,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 results[id] = { value: currentValue, color: color };
             }
         });
+        
         localStorage.setItem('taskResults', JSON.stringify(results));
     }
 
@@ -558,6 +574,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const savedResults = localStorage.getItem('taskResults');
         if (savedResults) {
             const results = JSON.parse(savedResults);
+            
             for (const id in results) {
                 const cell = document.getElementById(id);
                 if (!cell) continue;
@@ -570,10 +587,12 @@ document.addEventListener('DOMContentLoaded', function() {
                             showC2LocationList();
                             const container = cell.querySelector('.location-list');
                             container.innerHTML = '';
+                            
                             locationsWithColor.forEach(loc => {
                                 const locationItem = document.createElement('div');
                                 locationItem.className = 'location-item';
                                 locationItem.textContent = loc.text;
+                                
                                 if (loc.color === 'green') {
                                     locationItem.classList.add('text-green');
                                     locationItem.dataset.colorState = '1';
@@ -583,8 +602,10 @@ document.addEventListener('DOMContentLoaded', function() {
                                 } else {
                                     locationItem.dataset.colorState = '0';
                                 }
+                                
                                 container.appendChild(locationItem);
                             });
+                            
                             updateC2BackgroundColor();
                         } else {
                             const contentSpan = document.createElement('span');
@@ -593,6 +614,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             cell.innerHTML = '';
                             cell.appendChild(contentSpan);
                             cell.classList.remove('text-green', 'text-red');
+                            
                             if (results[id].color === 'green') cell.classList.add('text-green');
                             else if (results[id].color === 'red') cell.classList.add('text-red');
                         }
@@ -606,9 +628,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 } else {
                     const contentSpan = cell.querySelector('.cell-content');
                     const contentButton = cell.querySelector('button');
+                    
                     if (contentSpan) {
                         contentSpan.textContent = results[id].value;
                         contentSpan.classList.remove('placeholder');
+                        
                         if (results[id].color === 'green') cell.classList.add('text-green');
                         else if (results[id].color === 'red') cell.classList.add('text-red');
                     } else if (contentButton) {
@@ -619,10 +643,193 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
+    // Fonctions utilitaires
+    function createDropdownItem(text) {
+        const item = document.createElement('div');
+        item.className = 'dropdown-item';
+        
+        const span = document.createElement('span');
+        span.className = 'dropdown-item-content';
+        span.textContent = text;
+        
+        item.appendChild(span);
+        return item;
+    }
+
+    function showNotification(message, isCompletion = false) {
+        const notification = document.getElementById('notification-banner');
+        notification.textContent = message;
+        notification.classList.add('show');
+        
+        setTimeout(() => {
+            notification.classList.remove('show');
+            if (isCompletion) resetAll();
+        }, 2000);
+    }
+
+    function updateResults() {
+        saveResults();
+    }
+
+    // Fonctions de gestion des cellules
+    function resetAll() {
+        const cellsToReset = ['a1', 'a2', 'a3', 'a4', 'b4', 'c2', 'c3', 'c4', 'd1', 'd4'];
+        
+        cellsToReset.forEach(id => {
+            const cell = document.getElementById(id);
+            if (!cell) return;
+            
+            if (id === 'c2') {
+                showC2Buttons();
+                cell.dataset.locked = "false";
+            } else if (id === 'a2' || id === 'a3') {
+                cell.innerHTML = `<button>${id === 'a2' ? 'Début' : 'Fin'}</button>`;
+            } else {
+                const initialText = cell.getAttribute('data-initial-text');
+                const contentSpan = cell.querySelector('.cell-content');
+                
+                if (contentSpan) {
+                    contentSpan.textContent = initialText;
+                    contentSpan.classList.add('placeholder');
+                    contentSpan.classList.remove('default-user');
+                }
+            }
+            
+            cell.classList.remove('text-green', 'text-red', 'default-user-active');
+        });
+        
+        localStorage.removeItem('taskResults');
+        defaultUser = null;
+        defaultUserExpiry = null;
+        localStorage.removeItem('defaultUserD1');
+        
+        updateA1Menu();
+        updateD1MenuWithDefault();
+    }
+
+    function manualRefresh() {
+        resetAll();
+        showNotification('Toutes les cases ont été réinitialisées ! 🔄');
+    }
+
+    function checkCompletion() {
+        for (const id of requiredCells) {
+            const cell = document.getElementById(id);
+            if (!cell) return false;
+            
+            if (id === 'c2') {
+                const contentSpan = cell.querySelector('.cell-content');
+                const locationList = cell.querySelector('.location-list');
+                
+                if (!contentSpan && !locationList) return false;
+                
+                if (contentSpan && (contentSpan.textContent.trim() === 'R' || contentSpan.textContent.trim() === 'xR')) {
+                    return true;
+                }
+                
+                if (locationList) {
+                    const locations = Array.from(locationList.querySelectorAll('.location-item')).map(item => item.textContent.trim());
+                    if (locations.length > 0) return true;
+                }
+            } else {
+                const initialText = cell.getAttribute('data-initial-text');
+                const contentSpan = cell.querySelector('.cell-content');
+                const contentButton = cell.querySelector('button');
+                
+                let currentValue = contentSpan ? contentSpan.textContent.trim() : (contentButton ? contentButton.textContent.trim() : '');
+                if (!currentValue || currentValue === initialText) return false;
+            }
+        }
+        
+        showNotification('Tâche complète ! 🎉', true);
+        return true;
+    }
+
+    // Fonctions pour la cellule D1 (Utilisateur)
+    function saveDefaultUser() {
+        if (defaultUser) {
+            localStorage.setItem('defaultUserD1', JSON.stringify({ 
+                user: defaultUser, 
+                expiry: defaultUserExpiry 
+            }));
+        }
+    }
+
+    function loadDefaultUser() {
+        const defaultUserData = localStorage.getItem('defaultUserD1');
+        
+        if (defaultUserData) {
+            const userData = JSON.parse(defaultUserData);
+            
+            if (userData.expiry > Date.now()) {
+                defaultUser = userData.user;
+                defaultUserExpiry = userData.expiry;
+                
+                const cell = document.getElementById('d1');
+                cell.querySelector('.cell-content').textContent = defaultUser;
+                cell.querySelector('.cell-content').classList.remove('placeholder');
+                cell.querySelector('.cell-content').classList.add('default-user');
+                cell.classList.add('default-user-active');
+                
+                updateD1MenuWithDefault();
+            } else {
+                localStorage.removeItem('defaultUserD1');
+            }
+        }
+    }
+
+    function setDefaultUser(name) {
+        defaultUser = name;
+        defaultUserExpiry = Date.now() + 28800000; // 8 heures
+        
+        const cell = document.getElementById('d1');
+        cell.querySelector('.cell-content').textContent = defaultUser;
+        cell.querySelector('.cell-content').classList.remove('placeholder');
+        cell.querySelector('.cell-content').classList.add('default-user');
+        cell.classList.add('default-user-active');
+        
+        saveDefaultUser();
+        updateD1MenuWithDefault();
+        showNotification(`Utilisateur "${defaultUser}" défini par défaut pour 8h !`);
+    }
+
+    function updateD1MenuWithDefault() {
+        const menu = document.querySelector('#d1 .dropdown-menu');
+        menu.innerHTML = '';
+        
+        if (defaultUser) {
+            const defaultItem = createDropdownItem(`★ ${defaultUser} (par défaut)`);
+            defaultItem.classList.add('default-user-item');
+            menu.appendChild(defaultItem);
+        }
+        
+        initialUsers.forEach(user => {
+            if (user !== defaultUser) {
+                menu.appendChild(createDropdownItem(user));
+            }
+        });
+        
+        const addItem = createDropdownItem('+');
+        addItem.classList.add('add-item');
+        menu.appendChild(addItem);
+    }
+
+    // Fonctions pour la cellule A1 (Locale)
+    function updateA1Menu() {
+        const menu = document.querySelector('#a1 .dropdown-menu');
+        menu.innerHTML = '';
+        
+        initialLocales.forEach(locale => {
+            menu.appendChild(createDropdownItem(locale));
+        });
+    }
+
+    // Fonctions pour la cellule C2
     function showC2Buttons() {
-        const c2Cell = document.getElementById('c2');
+        const cell = document.getElementById('c2');
         cell.innerHTML = `<span class="cell-content placeholder-text">Sélectionnez Locale</span>`;
-    }  
+    }
+
     function showC2LocationList() {
         const c2Cell = document.getElementById('c2');
         c2Cell.innerHTML = `
@@ -632,57 +839,6 @@ document.addEventListener('DOMContentLoaded', function() {
             </div>`;
     }
 
-    function resetAll() {
-        const cellsToReset = ['a1', 'a2', 'a3', 'a4', 'b4', 'c2', 'c3', 'c4', 'd1', 'd4'];
-        cellsToReset.forEach(id => {
-            const cell = document.getElementById(id);
-            if (!cell) return;
-            if (id === 'c2') {
-                showC2Buttons();
-                cell.dataset.locked = "false";
-            } else if (id === 'a2' || id === 'a3') {
-                cell.innerHTML = `<button>${id === 'a2' ? 'Début' : 'Fin'}</button>`;
-            } else {
-                const initialText = cell.getAttribute('data-initial-text');
-                const contentSpan = cell.querySelector('.cell-content');
-                if (contentSpan) {
-                    contentSpan.textContent = initialText;
-                    contentSpan.classList.add('placeholder');
-                    contentSpan.classList.remove('default-user');
-                }
-            }
-            cell.classList.remove('text-green', 'text-red', 'default-user-active');
-        });
-        localStorage.removeItem('taskResults');
-        defaultUser = null; defaultUserExpiry = null;
-        localStorage.removeItem('defaultUserD1');
-        updateA1Menu();
-        updateD1MenuWithDefault();
-    }
-    
-    // --- Fonctions utilitaires ---
-    function createDropdownItem(text) { const i = document.createElement('div'); i.className = 'dropdown-item'; const s = document.createElement('span'); s.className = 'dropdown-item-content'; s.textContent = text; i.appendChild(s); return i; }
-    function showNotification(message, isCompletion = false) { const n = document.getElementById('notification-banner'); n.textContent = message; n.classList.add('show'); setTimeout(() => { n.classList.remove('show'); if (isCompletion) resetAll(); }, 2000); }
-    function manualRefresh() { resetAll(); showNotification('Toutes les cases ont été réinitialisées ! 🔄'); }
-    function updateResults() { saveResults(); }
-    function checkCompletion() { for (const id of requiredCells) { const cell = document.getElementById(id); if (!cell) return false; if (id === 'c2') { const contentSpan = cell.querySelector('.cell-content'); const locationList = cell.querySelector('.location-list'); if (!contentSpan && !locationList) return false; if (contentSpan && (contentSpan.textContent.trim() === 'R' || contentSpan.textContent.trim() === 'xR')) return true; if (locationList) { const locations = Array.from(locationList.querySelectorAll('.location-item')).map(item => item.textContent.trim()); if (locations.length > 0) return true; } } else { const initialText = cell.getAttribute('data-initial-text'); const contentSpan = cell.querySelector('.cell-content'); const contentButton = cell.querySelector('button'); let currentValue = contentSpan ? contentSpan.textContent.trim() : (contentButton ? contentButton.textContent.trim() : ''); if (!currentValue || currentValue === initialText) return false; } } showNotification('Tâche complète ! 🎉', true); return true; }
-
-    // Fonctions pour D1
-    function saveDefaultUser() { if (defaultUser) localStorage.setItem('defaultUserD1', JSON.stringify({ user: defaultUser, expiry: defaultUserExpiry })); }
-    function loadDefaultUser() { const d = localStorage.getItem('defaultUserD1'); if (d) { const u = JSON.parse(d); if (u.expiry > Date.now()) { defaultUser = u.user; defaultUserExpiry = u.expiry; const c = document.getElementById('d1'); c.querySelector('.cell-content').textContent = defaultUser; c.querySelector('.cell-content').classList.remove('placeholder'); c.querySelector('.cell-content').classList.add('default-user'); c.classList.add('default-user-active'); updateD1MenuWithDefault(); } else { localStorage.removeItem('defaultUserD1'); } } }
-    function setDefaultUser(name) { defaultUser = name; defaultUserExpiry = Date.now() + 28800000; const c = document.getElementById('d1'); c.querySelector('.cell-content').textContent = defaultUser; c.querySelector('.cell-content').classList.remove('placeholder'); c.querySelector('.cell-content').classList.add('default-user'); c.classList.add('default-user-active'); saveDefaultUser(); updateD1MenuWithDefault(); showNotification(`Utilisateur "${defaultUser}" défini par défaut pour 8h !`); }
-    function updateD1MenuWithDefault() { const m = document.querySelector('#d1 .dropdown-menu'); m.innerHTML = ''; if (defaultUser) { const i = createDropdownItem(`★ ${defaultUser} (par défaut)`); i.classList.add('default-user-item'); m.appendChild(i); } initialUsers.forEach(u => { if (u !== defaultUser) m.appendChild(createDropdownItem(u)); }); const a = createDropdownItem('+'); a.classList.add('add-item'); m.appendChild(a); }
-
-    // Fonctions pour A1 (sans le bouton +)
-    function updateA1Menu() {
-        const m = document.querySelector('#a1 .dropdown-menu');
-        m.innerHTML = '';
-        initialLocales.forEach(l => {
-             m.appendChild(createDropdownItem(l));
-        });
-    }
-
-    // --- Fonctions pour la C2 ---
     function checkLocaleControlAndDisplay(locale) {
         const c2Cell = document.getElementById('c2');
         c2Cell.innerHTML = `<span class="cell-content">Analyse en cours...</span>`;
@@ -695,7 +851,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 console.log('Réponse de l\'API:', data);
                 
                 if (data.success && data.data && data.data.length > 0) {
-                    // Cas 1 : Contrôles trouvés - afficher la liste
                     showC2LocationList();
                     const container = c2Cell.querySelector('.location-list');
                     container.innerHTML = '';
@@ -707,9 +862,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         locationItem.dataset.colorState = '0';
                         container.appendChild(locationItem);
                     });
-                    
                 } else {
-                    // Cas 2 : Aucun contrôle trouvé - afficher directement "R"
                     c2Cell.innerHTML = `<span class="cell-content">R</span>`;
                     c2Cell.dataset.hasControl = "false";
                 }
@@ -720,15 +873,13 @@ document.addEventListener('DOMContentLoaded', function() {
             })
             .catch(error => {
                 console.error('Erreur de connexion à l\'API:', error);
-                // Cas 3 : Erreur de connexion - afficher "R" par défaut
                 c2Cell.innerHTML = `<span class="cell-content">R</span>`;
                 c2Cell.dataset.hasControl = "false";
                 c2Cell.dataset.locked = "false";
                 updateResults();
             });
     }
-    
-    // Et modifier aussi la fonction loadControlLocations pour le même comportement
+
     function loadControlLocations() {
         const c2Cell = document.getElementById('c2');
         const locale = document.querySelector('#a1 .cell-content').textContent.trim();
@@ -746,7 +897,6 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(response => response.json())
             .then(data => {
                 if (data.success && data.data && data.data.length > 0) {
-                    // Contrôles trouvés - afficher la liste
                     showC2LocationList();
                     const container = c2Cell.querySelector('.location-list');
                     container.innerHTML = '';
@@ -759,127 +909,58 @@ document.addEventListener('DOMContentLoaded', function() {
                         container.appendChild(locationItem);
                     });
                 } else {
-                    // Aucun contrôle trouvé - afficher directement "R"
                     c2Cell.innerHTML = `<span class="cell-content">R</span>`;
                     c2Cell.dataset.hasControl = "false";
                 }
+                
                 c2Cell.dataset.locked = "false";
                 updateResults();
             })
             .catch(error => {
                 console.error('Erreur de connexion à l\'API:', error);
-                // Erreur - afficher "R" par défaut
                 c2Cell.innerHTML = `<span class="cell-content">R</span>`;
                 c2Cell.dataset.hasControl = "false";
                 c2Cell.dataset.locked = "false";
                 updateResults();
             });
-    }   
-    // Nouvelle fonction pour condenser la liste et afficher le comptage
+    }
+
     function condenseC2List() {
         const c2Cell = document.getElementById('c2');
         const locationItems = Array.from(c2Cell.querySelectorAll('.location-item'));
         
-        // Compter le nombre d'éléments rouges
         const redCount = locationItems.filter(item => 
             item.classList.contains('text-red')
         ).length;
         
-        // Vider la liste et afficher le résultat condensé
         c2Cell.innerHTML = `<span class="cell-content">${redCount > 0 ? redCount + 'R' : 'R'}</span>`;
         
-        // Appliquer la couleur rouge si au moins un élément est rouge
         c2Cell.classList.remove('text-green', 'text-red');
         if (redCount > 0) {
             c2Cell.classList.add('text-red');
         }
         
-        // Marquer la cellule comme verrouillée
         c2Cell.dataset.locked = "true";
         updateResults();
         checkCompletion();
     }
-    
-    // Modifier le gestionnaire de clic externe pour utiliser la nouvelle fonction
-    document.addEventListener('click', function(event) {
-        const c2Cell = document.getElementById('c2');
-        const isClickInsideC2 = c2Cell.contains(event.target);
-    
-        const locationListExists = c2Cell.querySelector('.location-list');
-        
-        if (!isClickInsideC2 && locationListExists && c2Cell.dataset.locked === "false") {
-            condenseC2List(); // Utiliser la nouvelle fonction de condensation
-        }
-    
-        if (!event.target.closest('.cell') && activeMenu) {
-            activeMenu.classList.remove('show');
-            activeMenu = null;
-        }
-    });
-
-    function loadControlLocations() {
-        const c2Cell = document.getElementById('c2');
-        const locale = document.querySelector('#a1 .cell-content').textContent.trim();
-        
-        if (!locale || locale === 'Locale') {
-            showC2Buttons();
-            return;
-        }
-        
-        c2Cell.innerHTML = `<span class="cell-content">Chargement...</span>`;
-        
-        const url = `${SCRIPT_URL}?locale=${encodeURIComponent(locale)}`;
-        
-        fetch(url)
-            .then(response => response.json())
-            .then(data => {
-                showC2LocationList();
-                const container = c2Cell.querySelector('.location-list');
-                container.innerHTML = '';
-                
-                if (data.success && data.data && data.data.length > 0) {
-                    data.data.forEach(location => {
-                        const locationItem = document.createElement('div');
-                        locationItem.className = 'location-item';
-                        locationItem.textContent = location;
-                        locationItem.dataset.colorState = '0';
-                        container.appendChild(locationItem);
-                    });
-                } else {
-                    const emptyItem = document.createElement('div');
-                    emptyItem.className = 'location-item empty';
-                    emptyItem.textContent = 'Aucun contrôle trouvé';
-                    container.appendChild(emptyItem);
-                }
-                c2Cell.dataset.locked = "false";
-                updateResults();
-            })
-            .catch(error => {
-                console.error('Erreur de connexion à l\'API:', error);
-                showC2LocationList();
-                const container = c2Cell.querySelector('.location-list');
-                container.innerHTML = '';
-                const errorItem = document.createElement('div');
-                errorItem.className = 'location-item empty';
-                errorItem.textContent = 'Erreur de chargement';
-                container.appendChild(errorItem);
-                c2Cell.dataset.locked = "false";
-                updateResults();
-            });
-    }
 
     function handleListAdd(cell) {
         const newLocation = prompt("Veuillez entrer le nom du nouvel endroit :");
+        
         if (newLocation && newLocation.trim()) {
             let container = cell.querySelector('.location-list');
+            
             if (!container) {
                 showC2LocationList();
                 container = cell.querySelector('.location-list');
             }
+            
             const newLocationItem = document.createElement('div');
             newLocationItem.className = 'location-item';
             newLocationItem.textContent = newLocation.trim();
             newLocationItem.dataset.colorState = '0';
+            
             container.appendChild(newLocationItem);
             updateResults();
         }
@@ -889,7 +970,9 @@ document.addEventListener('DOMContentLoaded', function() {
         let state = parseInt(locationItem.dataset.colorState || '0');
         state = (state + 1) % 3;
         locationItem.dataset.colorState = state;
+        
         locationItem.classList.remove('text-green', 'text-red');
+        
         if (state === 1) {
             locationItem.classList.add('text-green');
         } else if (state === 2) {
@@ -919,164 +1002,171 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // --- Configuration Initiale ---
-    updateA1Menu();
-    updateD1MenuWithDefault();
-    const c3Menu = document.querySelector('#c3 .dropdown-menu');
-    const xylophageItem = createDropdownItem('Xylophage');
-    xylophageItem.dataset.colorState = '0';
-    c3Menu.appendChild(xylophageItem);
-    ['#a4', '#b4', '#c4', '#d4'].forEach(cellId => { const menu = document.querySelector(`${cellId} .dropdown-menu`); ['Vide', '1', '2', '3'].forEach(opt => menu.appendChild(createDropdownItem(opt))); });
-    
-    showC2Buttons();
-    loadResults();
-    loadDefaultUser();
-
-    // --- Gestionnaire d'Événements Principal ---
-    const grid = document.querySelector('.grid');
-    let activeMenu = null;
-    
-    document.addEventListener('click', function(event) {
-        const c2Cell = document.getElementById('c2');
-        const isClickInsideC2 = c2Cell.contains(event.target);
-
-        // 1. Vérifier d'abord si une liste est affichée et active
-        const locationListExists = c2Cell.querySelector('.location-list');
+    // Initialisation
+    function initializeApp() {
+        updateA1Menu();
+        updateD1MenuWithDefault();
         
-        // 2. SI une liste est active, ALORS vérifier si la cellule est déverrouillée
-        if (!isClickInsideC2 && locationListExists && c2Cell.dataset.locked === "false") {
-            const locationItems = Array.from(c2Cell.querySelectorAll('.location-item'));
-            const hasRed = locationItems.some(item => item.classList.contains('text-red'));
-            const hasGreen = locationItems.some(item => item.classList.contains('text-green'));
+        // Configuration du menu C3
+        const c3Menu = document.querySelector('#c3 .dropdown-menu');
+        const xylophageItem = createDropdownItem('Xylophage');
+        xylophageItem.dataset.colorState = '0';
+        c3Menu.appendChild(xylophageItem);
+        
+        // Configuration des menus de notes (A4, B4, C4, D4)
+        ['#a4', '#b4', '#c4', '#d4'].forEach(cellId => {
+            const menu = document.querySelector(`${cellId} .dropdown-menu`);
+            ['Vide', '1', '2', '3'].forEach(opt => {
+                menu.appendChild(createDropdownItem(opt));
+            });
+        });
+        
+        showC2Buttons();
+        loadResults();
+        loadDefaultUser();
+    }
+
+    // Gestionnaires d'événements
+    function setupEventListeners() {
+        const grid = document.querySelector('.grid');
+        
+        // Gestionnaire pour les clics en dehors des éléments
+        document.addEventListener('click', function(event) {
+            const c2Cell = document.getElementById('c2');
+            const isClickInsideC2 = c2Cell.contains(event.target);
+            const locationListExists = c2Cell.querySelector('.location-list');
             
-            // Vider la liste et afficher le résultat condensé
-            c2Cell.innerHTML = `<span class="cell-content">R</span>`;
-            c2Cell.classList.remove('text-green', 'text-red');
-            
-            // Appliquer la couleur en fonction du contenu de l'ancienne liste
-            if (hasRed) {
-                c2Cell.classList.add('text-red');
-            } else if (hasGreen) {
-                c2Cell.classList.add('text-green');
+            if (!isClickInsideC2 && locationListExists && c2Cell.dataset.locked === "false") {
+                condenseC2List();
             }
             
-            // FINALEMENT, marquer la cellule comme verrouillée
-            c2Cell.dataset.locked = "true";
-            updateResults();
-            checkCompletion();
-        }
-
-        // Gestion des menus déroulants
-        if (!event.target.closest('.cell') && activeMenu) {
-            activeMenu.classList.remove('show');
-            activeMenu = null;
-        }
-    });
-
-    grid.addEventListener('click', function(event) {
-        const cell = event.target.closest('.cell');
-        if (!cell || cell.classList.contains('empty-cell')) return;
-        if (cell.id === 'd1' && cell.classList.contains('default-user-active')) return;
-
-        // === LOGIQUE DE GESTION DE LA CASE C2 ===
-        if (cell.id === 'c2') {
-            const listAddButton = event.target.closest('.list-add-button');
-            const locationItem = event.target.closest('.location-item');
-            const contentSpan = cell.querySelector('.cell-content');
-
-            if (listAddButton) {
-                handleListAdd(cell);
-            } else if (locationItem) {
-                handleLocationItemClick(locationItem);
-            } else if (contentSpan && (contentSpan.textContent === 'R' || contentSpan.textContent === 'xR')) {
-                // Si on clique sur R ou xR, charger la liste des endroits
-                loadControlLocations();
-            } else if (cell.querySelector('.cell-content')) {
-                cell.dataset.locked = "false";
-                showC2Buttons();
-                updateResults();
+            if (!event.target.closest('.cell') && activeMenu) {
+                activeMenu.classList.remove('show');
+                activeMenu = null;
             }
-            return;
-        }
+        });
+        
+        // Gestionnaire pour les clics sur la grille
+        grid.addEventListener('click', function(event) {
+            const cell = event.target.closest('.cell');
+            if (!cell || cell.classList.contains('empty-cell')) return;
+            if (cell.id === 'd1' && cell.classList.contains('default-user-active')) return;
 
-        if (event.target.tagName === 'BUTTON') {
-            const timeString = new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
-            cell.innerHTML = `<span class="cell-content">${timeString}</span>`;
-            updateResults();
-            checkCompletion();
-            return;
-        }
+            // Gestion spécifique de la cellule C2
+            if (cell.id === 'c2') {
+                const listAddButton = event.target.closest('.list-add-button');
+                const locationItem = event.target.closest('.location-item');
+                const contentSpan = cell.querySelector('.cell-content');
 
-        const dropdownItem = event.target.closest('.dropdown-item');
-        if (dropdownItem) {
-            const cellId = cell.id;
-            const contentSpan = cell.querySelector('.cell-content');
-            
-            if (dropdownItem.classList.contains('add-item')) {
-                let newItem;
-                if (cellId === 'd1') {
-                    newItem = prompt("Veuillez entrer un nouveau prénom :");
-                    if (newItem && newItem.trim()) {
-                        initialUsers.push(newItem.trim());
-                        updateD1MenuWithDefault();
-                        setDefaultUser(newItem.trim());
-                    }
-                } else if (cellId === 'a1') {
-                    newItem = prompt("Veuillez entrer une nouvelle locale :");
-                    if (newItem && newItem.trim()) {
-                        initialLocales.push(newItem.trim());
-                        updateA1Menu();
-                        contentSpan.textContent = newItem.trim();
-                        contentSpan.classList.remove('placeholder');
-                        updateResults();
-                        checkCompletion();
-                    }
+                if (listAddButton) {
+                    handleListAdd(cell);
+                } else if (locationItem) {
+                    handleLocationItemClick(locationItem);
+                } else if (contentSpan && (contentSpan.textContent === 'R' || contentSpan.textContent === 'xR')) {
+                    loadControlLocations();
+                } else if (cell.querySelector('.cell-content')) {
+                    cell.dataset.locked = "false";
+                    showC2Buttons();
+                    updateResults();
                 }
                 return;
             }
 
-            if (cellId === 'd1') {
-                setDefaultUser(dropdownItem.textContent.replace(/^★ /, '').replace(/ \(par défaut\)$/, ''));
-                if (activeMenu) { activeMenu.classList.remove('show'); activeMenu = null; }
+            // Gestion des boutons
+            if (event.target.tagName === 'BUTTON') {
+                const timeString = new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+                cell.innerHTML = `<span class="cell-content">${timeString}</span>`;
+                updateResults();
+                checkCompletion();
                 return;
             }
 
-            if (cellId === 'c3') {
-                let state = (parseInt(dropdownItem.dataset.colorState || '0') + 1) % 3;
-                dropdownItem.dataset.colorState = state;
-                cell.classList.remove('text-green', 'text-red');
-                if (state === 1) cell.classList.add('text-green');
-                else if (state === 2) cell.classList.add('text-red');
-                contentSpan.textContent = dropdownItem.querySelector('.dropdown-item-content').textContent;
-                contentSpan.classList.remove('placeholder');
-            } else if (cellId === 'a1') {
-                // Quand une locale est sélectionnée, vérifier automatiquement le contrôle
-                const selectedLocale = dropdownItem.textContent;
-                contentSpan.textContent = selectedLocale;
-                contentSpan.classList.remove('placeholder');
-                checkLocaleControlAndDisplay(selectedLocale);
-            } else {
-                contentSpan.textContent = dropdownItem.textContent;
-                contentSpan.classList.remove('placeholder');
+            // Gestion des éléments de menu déroulant
+            const dropdownItem = event.target.closest('.dropdown-item');
+            if (dropdownItem) {
+                const cellId = cell.id;
+                const contentSpan = cell.querySelector('.cell-content');
+                
+                if (dropdownItem.classList.contains('add-item')) {
+                    let newItem;
+                    
+                    if (cellId === 'd1') {
+                        newItem = prompt("Veuillez entrer un nouveau prénom :");
+                        if (newItem && newItem.trim()) {
+                            initialUsers.push(newItem.trim());
+                            updateD1MenuWithDefault();
+                            setDefaultUser(newItem.trim());
+                        }
+                    } else if (cellId === 'a1') {
+                        newItem = prompt("Veuillez entrer une nouvelle locale :");
+                        if (newItem && newItem.trim()) {
+                            initialLocales.push(newItem.trim());
+                            updateA1Menu();
+                            contentSpan.textContent = newItem.trim();
+                            contentSpan.classList.remove('placeholder');
+                            updateResults();
+                            checkCompletion();
+                        }
+                    }
+                    return;
+                }
+
+                if (cellId === 'd1') {
+                    setDefaultUser(dropdownItem.textContent.replace(/^★ /, '').replace(/ \(par défaut\)$/, ''));
+                    if (activeMenu) {
+                        activeMenu.classList.remove('show');
+                        activeMenu = null;
+                    }
+                    return;
+                }
+
+                if (cellId === 'c3') {
+                    let state = (parseInt(dropdownItem.dataset.colorState || '0') + 1) % 3;
+                    dropdownItem.dataset.colorState = state;
+                    cell.classList.remove('text-green', 'text-red');
+                    
+                    if (state === 1) cell.classList.add('text-green');
+                    else if (state === 2) cell.classList.add('text-red');
+                    
+                    contentSpan.textContent = dropdownItem.querySelector('.dropdown-item-content').textContent;
+                    contentSpan.classList.remove('placeholder');
+                } else if (cellId === 'a1') {
+                    const selectedLocale = dropdownItem.textContent;
+                    contentSpan.textContent = selectedLocale;
+                    contentSpan.classList.remove('placeholder');
+                    checkLocaleControlAndDisplay(selectedLocale);
+                } else {
+                    contentSpan.textContent = dropdownItem.textContent;
+                    contentSpan.classList.remove('placeholder');
+                }
+                
+                if (activeMenu) {
+                    activeMenu.classList.remove('show');
+                    activeMenu = null;
+                }
+                
+                updateResults();
+                checkCompletion();
+                return;
             }
             
-            if (activeMenu) { activeMenu.classList.remove('show'); activeMenu = null; }
-            updateResults();
-            checkCompletion();
-            return;
-        }
-        
-        const menu = cell.querySelector('.dropdown-menu');
-        if (menu) {
-            if (activeMenu && activeMenu !== menu) activeMenu.classList.remove('show');
-            menu.classList.toggle('show');
-            activeMenu = menu.classList.contains('show') ? menu : null;
-        }
-    });
+            // Gestion de l'affichage des menus déroulants
+            const menu = cell.querySelector('.dropdown-menu');
+            if (menu) {
+                if (activeMenu && activeMenu !== menu) activeMenu.classList.remove('show');
+                menu.classList.toggle('show');
+                activeMenu = menu.classList.contains('show') ? menu : null;
+            }
+        });
 
-    document.getElementById('refresh-button').addEventListener('click', manualRefresh);
+        // Gestionnaire pour le bouton d'actualisation
+        document.getElementById('refresh-button').addEventListener('click', manualRefresh);
+    }
+
+    // Initialisation de l'application
+    initializeApp();
+    setupEventListeners();
 });
-</script>
-
+    </script>
 </body>
 </html>
