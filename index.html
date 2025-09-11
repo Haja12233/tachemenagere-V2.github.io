@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Matrice 4x4 - Gestion de Tâche</title>
-    <link rel="stylesheet" href="style.css">
     <style>
     :root {
     --primary-color: #0056b3;
@@ -186,19 +185,17 @@
     .list-add-button {
         display: block;
         width: 100%;
-        padding: 4px 6px;
+        padding: 4px 6px; /* Taille réduite */
         border: 1px solid var(--border-color);
         border-radius: 8px;
         background-color: var(--primary-color);
         color: white;
         font-weight: bold;
-        font-size: 14px;
+        font-size: 14px; /* Taille de police réduite */
         text-align: center;
         cursor: pointer;
         transition: background-color 0.2s;
-        position : relative;
-        left: -6.4px;
-        line-height: 1; /* Pour centrer le + */
+        line-height: 1; 
     }
     
     .list-add-button:hover {
@@ -445,7 +442,6 @@
     const initialUsers = ['Anniva', 'Tina'];
     let initialLocales = ['P1', 'P2', 'P3', 'P4', 'P5', 'P6', 'P7', 'P8', 'P9', 'P10'];
     let defaultUser = null, defaultUserExpiry = null;
-    let defaultLocale = null, defaultLocaleExpiry = null;
     const requiredCells = ['a1', 'a2', 'a3', 'c2', 'c3', 'd1'];
     let clickTimeout = null;
 
@@ -527,19 +523,16 @@
                             });
                             updateC2BackgroundColor();
                         } else {
-                            showC2Buttons();
                             const contentSpan = document.createElement('span');
                             contentSpan.className = 'cell-content';
                             contentSpan.textContent = value;
                             cell.innerHTML = '';
                             cell.appendChild(contentSpan);
-                            // --> Réappliquer la couleur sauvegardée
                             cell.classList.remove('text-green', 'text-red');
                             if (results[id].color === 'green') cell.classList.add('text-green');
                             else if (results[id].color === 'red') cell.classList.add('text-red');
                         }
                     } catch (e) {
-                        showC2Buttons();
                         const contentSpan = document.createElement('span');
                         contentSpan.className = 'cell-content';
                         contentSpan.textContent = value;
@@ -564,11 +557,7 @@
 
     function showC2Buttons() {
         const c2Cell = document.getElementById('c2');
-        c2Cell.innerHTML = `
-            <div class="button-container">
-                <button class="choice-button" data-value="R">R</button>
-                <button class="choice-button" data-value="xR">xR</button>
-            </div>`;
+        c2Cell.innerHTML = `<span class="cell-content placeholder">Sélectionnez une locale</span>`;
     }
     
     function showC2LocationList() {
@@ -601,9 +590,9 @@
             cell.classList.remove('text-green', 'text-red', 'default-user-active');
         });
         localStorage.removeItem('taskResults');
-        defaultUser = null; defaultUserExpiry = null; defaultLocale = null; defaultLocaleExpiry = null;
-        localStorage.removeItem('defaultUserD1'); localStorage.removeItem('defaultLocaleA1');
-        updateA1MenuWithDefaults();
+        defaultUser = null; defaultUserExpiry = null;
+        localStorage.removeItem('defaultUserD1');
+        updateA1Menu();
         updateD1MenuWithDefault();
     }
     
@@ -620,59 +609,171 @@
     function setDefaultUser(name) { defaultUser = name; defaultUserExpiry = Date.now() + 28800000; const c = document.getElementById('d1'); c.querySelector('.cell-content').textContent = defaultUser; c.querySelector('.cell-content').classList.remove('placeholder'); c.querySelector('.cell-content').classList.add('default-user'); c.classList.add('default-user-active'); saveDefaultUser(); updateD1MenuWithDefault(); showNotification(`Utilisateur "${defaultUser}" défini par défaut pour 8h !`); }
     function updateD1MenuWithDefault() { const m = document.querySelector('#d1 .dropdown-menu'); m.innerHTML = ''; if (defaultUser) { const i = createDropdownItem(`★ ${defaultUser} (par défaut)`); i.classList.add('default-user-item'); m.appendChild(i); } initialUsers.forEach(u => { if (u !== defaultUser) m.appendChild(createDropdownItem(u)); }); const a = createDropdownItem('+'); a.classList.add('add-item'); m.appendChild(a); }
 
-    // Fonctions pour A1 (nouvelles)
-    function saveDefaultLocale() { if (defaultLocale) localStorage.setItem('defaultLocaleA1', JSON.stringify({ locale: defaultLocale, expiry: defaultLocaleExpiry })); }
-    function loadDefaultLocale() { const d = localStorage.getItem('defaultLocaleA1'); if (d) { const l = JSON.parse(d); if (l.expiry > Date.now()) { defaultLocale = l.locale; defaultLocaleExpiry = l.expiry; const c = document.getElementById('a1'); c.querySelector('.cell-content').textContent = defaultLocale; c.querySelector('.cell-content').classList.remove('placeholder'); c.querySelector('.cell-content').classList.add('default-user'); c.classList.add('default-user-active'); updateA1MenuWithDefaults(); } else { localStorage.removeItem('defaultLocaleA1'); } } }
-    function setDefaultLocale(name) { defaultLocale = name; defaultLocaleExpiry = Date.now() + 28800000; const c = document.getElementById('a1'); c.querySelector('.cell-content').textContent = defaultLocale; c.querySelector('.cell-content').classList.remove('placeholder'); c.querySelector('.cell-content').classList.add('default-user'); c.classList.add('default-user-active'); saveDefaultLocale(); updateA1MenuWithDefaults(); showNotification(`Locale "${defaultLocale}" définie par défaut pour 8h !`); }
-    function updateA1MenuWithDefaults() { const m = document.querySelector('#a1 .dropdown-menu'); m.innerHTML = ''; if (defaultLocale) { const i = createDropdownItem(`★ ${defaultLocale} (par défaut)`); i.classList.add('default-locale-item'); m.appendChild(i); } initialLocales.forEach(l => { if (l !== defaultLocale) m.appendChild(createDropdownItem(l)); });  }
-
-    // --- Fonctions pour la C2 simplifiées ---
-    function handleRChoice(cell) {
-        cell.innerHTML = `<span class="cell-content">Chargement...</span>`;
-        setTimeout(() => {
-            showC2LocationList();
-            const locale = document.querySelector('#a1 .cell-content').textContent.trim();
-            const url = `${SCRIPT_URL}?locale=${encodeURIComponent(locale)}`;
-            
-            fetch(url)
-                .then(response => response.json())
-                .then(data => {
-                    const container = cell.querySelector('.location-list');
-                    container.innerHTML = '';
-                    if (data.success && data.data.length > 0) {
-                        data.data.forEach(location => {
-                            const locationItem = document.createElement('div');
-                            locationItem.className = 'location-item';
-                            locationItem.textContent = location;
-                            locationItem.dataset.colorState = '0';
-                            container.appendChild(locationItem);
-                        });
-                    } else {
-                        const emptyItem = document.createElement('div');
-                        emptyItem.className = 'location-item empty';
-                        emptyItem.textContent = 'Pas de "OUI" pour cette locale';
-                        container.appendChild(emptyItem);
-                    }
-                })
-                .catch(error => {
-                    console.error('Erreur de connexion à l\'API:', error);
-                    const container = cell.querySelector('.location-list');
-                    container.innerHTML = '';
-                    const errorItem = document.createElement('div');
-                    errorItem.className = 'location-item empty';
-                    errorItem.textContent = 'Erreur réseau';
-                    container.appendChild(errorItem);
-                });
-        }, 300); // Délai de 300ms
+    // Fonctions pour A1 (sans le bouton +)
+    function updateA1Menu() {
+        const m = document.querySelector('#a1 .dropdown-menu');
+        m.innerHTML = '';
+        initialLocales.forEach(l => {
+             m.appendChild(createDropdownItem(l));
+        });
     }
 
-    function handleXRChoice(cell, value) {
-        cell.innerHTML = `<span class="cell-content">${value}</span>`;
-        cell.style.backgroundColor = '';
-        cell.classList.remove('text-green', 'text-red');
-        cell.dataset.locked = "true"; // Bloque la case
-        updateResults();
-        checkCompletion();
+    // --- Fonctions pour la C2 ---
+    function checkLocaleControlAndDisplay(locale) {
+        const c2Cell = document.getElementById('c2');
+        c2Cell.innerHTML = `<span class="cell-content">Analyse en cours...</span>`;
+        
+        // Vérifier d'abord si la locale existe dans la base de données
+        const url = `${SCRIPT_URL}?locale=${encodeURIComponent(locale)}`;
+        
+        fetch(url)
+            .then(response => response.json())
+            .then(data => {
+                console.log('Réponse de l\'API:', data); // Pour le débogage
+                if (data.success && data.data && data.data.length > 0) {
+                    // S'il y a des contrôles "OUI", afficher xR
+                    c2Cell.innerHTML = `<span class="cell-content">xR</span>`;
+                    c2Cell.classList.add('text-red');
+                    c2Cell.dataset.hasControl = "true";
+                } else {
+                    // Sinon afficher R
+                    c2Cell.innerHTML = `<span class="cell-content">R</span>`;
+                    c2Cell.classList.add('text-green');
+                    c2Cell.dataset.hasControl = "false";
+                }
+                updateResults();
+                checkCompletion();
+            })
+            .catch(error => {
+                console.error('Erreur de connexion à l\'API:', error);
+                // En cas d'erreur, afficher R par défaut
+                c2Cell.innerHTML = `<span class="cell-content">R</span>`;
+                c2Cell.classList.add('text-green');
+                c2Cell.dataset.hasControl = "false";
+                updateResults();
+            });
+    }
+
+    function loadControlLocations() {
+        const c2Cell = document.getElementById('c2');
+        const locale = document.querySelector('#a1 .cell-content').textContent.trim();
+        
+        if (!locale || locale === 'Locale') {
+            showC2Buttons();
+            return;
+        }
+        
+        c2Cell.innerHTML = `<span class="cell-content">Chargement...</span>`;
+        
+        const url = `${SCRIPT_URL}?locale=${encodeURIComponent(locale)}`;
+        
+        fetch(url)
+            .then(response => response.json())
+            .then(data => {
+                showC2LocationList();
+                const container = c2Cell.querySelector('.location-list');
+                container.innerHTML = '';
+                
+                if (data.success && data.data && data.data.length > 0) {
+                    data.data.forEach(location => {
+                        const locationItem = document.createElement('div');
+                        locationItem.className = 'location-item';
+                        locationItem.textContent = location;
+                        locationItem.dataset.colorState = '0';
+                        container.appendChild(locationItem);
+                    });
+                } else {
+                    const emptyItem = document.createElement('div');
+                    emptyItem.className = 'location-item empty';
+                    emptyItem.textContent = 'Aucun contrôle trouvé';
+                    container.appendChild(emptyItem);
+                }
+                updateResults();
+            })
+            .catch(error => {
+                console.error('Erreur de connexion à l\'API:', error);
+                showC2LocationList();
+                const container = c2Cell.querySelector('.location-list');
+                container.innerHTML = '';
+                const errorItem = document.createElement('div');
+                errorItem.className = 'location-item empty';
+                errorItem.textContent = 'Erreur de chargement';
+                container.appendChild(errorItem);
+                updateResults();
+            });
+    }
+
+    // === NOUVELLE FONCTION : Actualiser les données C2 ===
+    function refreshC2Data() {
+        const c2Cell = document.getElementById('c2');
+        const locale = document.querySelector('#a1 .cell-content').textContent.trim();
+        
+        if (!locale || locale === 'Locale') {
+            showNotification('Veuillez d\'abord sélectionner une locale !');
+            return;
+        }
+        
+        c2Cell.innerHTML = `<span class="cell-content">Actualisation...</span>`;
+        
+        // Recharger les données depuis la base
+        const url = `${SCRIPT_URL}?locale=${encodeURIComponent(locale)}`;
+        
+        fetch(url)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success && data.data && data.data.length > 0) {
+                    // S'il y a des contrôles "OUI", afficher xR
+                    c2Cell.innerHTML = `<span class="cell-content">xR</span>`;
+                    c2Cell.classList.add('text-red');
+                    c2Cell.dataset.hasControl = "true";
+                    showNotification('Données C2 actualisées avec xR !');
+                } else {
+                    // Sinon afficher R
+                    c2Cell.innerHTML = `<span class="cell-content">R</span>`;
+                    c2Cell.classList.add('text-green');
+                    c2Cell.dataset.hasControl = "false";
+                    showNotification('Données C2 actualisées avec R !');
+                }
+                updateResults();
+                checkCompletion();
+            })
+            .catch(error => {
+                console.error('Erreur lors de l\'actualisation:', error);
+                showNotification('Erreur lors de l\'actualisation !');
+                // Restaurer la valeur précédente
+                const currentValue = c2Cell.dataset.hasControl === "true" ? "xR" : "R";
+                const isRed = c2Cell.dataset.hasControl === "true";
+                c2Cell.innerHTML = `<span class="cell-content">${currentValue}</span>`;
+                c2Cell.classList.remove('text-green', 'text-red');
+                if (isRed) c2Cell.classList.add('text-red');
+                else c2Cell.classList.add('text-green');
+            });
+    }
+
+    // === NOUVELLE FONCTION : Ajouter un nouveau résultat ===
+    function addNewResult() {
+        const c2Cell = document.getElementById('c2');
+        const newResult = prompt("Entrez le nouveau résultat (R ou xR) :");
+        
+        if (newResult && (newResult.toUpperCase() === 'R' || newResult.toUpperCase() === 'XR')) {
+            const formattedResult = newResult.toUpperCase() === 'XR' ? 'xR' : 'R';
+            
+            c2Cell.innerHTML = `<span class="cell-content">${formattedResult}</span>`;
+            c2Cell.classList.remove('text-green', 'text-red');
+            
+            if (formattedResult === 'xR') {
+                c2Cell.classList.add('text-red');
+                c2Cell.dataset.hasControl = "true";
+            } else {
+                c2Cell.classList.add('text-green');
+                c2Cell.dataset.hasControl = "false";
+            }
+            
+            updateResults();
+            showNotification(`Nouveau résultat "${formattedResult}" ajouté !`);
+        } else if (newResult) {
+            showNotification('Veuillez entrer R ou xR !');
+        }
     }
 
     function handleListAdd(cell) {
@@ -689,6 +790,7 @@
             newLocationItem.dataset.colorState = '0';
             container.appendChild(newLocationItem);
             updateResults();
+            showNotification('Nouvel endroit ajouté !');
         }
     }
 
@@ -703,7 +805,6 @@
             locationItem.classList.add('text-red');
         }
     
-        // Mise à jour immédiate, plus de timeout
         updateC2BackgroundColor();
         updateResults();
         checkCompletion();
@@ -728,7 +829,7 @@
     }
 
     // --- Configuration Initiale ---
-    updateA1MenuWithDefaults();
+    updateA1Menu();
     updateD1MenuWithDefault();
     const c3Menu = document.querySelector('#c3 .dropdown-menu');
     const xylophageItem = createDropdownItem('Xylophage');
@@ -739,7 +840,6 @@
     showC2Buttons();
     loadResults();
     loadDefaultUser();
-    loadDefaultLocale();
 
     // --- Gestionnaire d'Événements Principal ---
     const grid = document.querySelector('.grid');
@@ -762,51 +862,45 @@
                 } else if (hasGreen) {
                     c2Cell.classList.add('text-green');
                 }
-                c2Cell.dataset.locked = "true"; // On bloque la case
+                c2Cell.dataset.locked = "true";
                 updateResults();
                 checkCompletion();
             }
+        }
+        if (!event.target.closest('.cell') && activeMenu) {
+            activeMenu.classList.remove('show');
+            activeMenu = null;
         }
     });
 
     grid.addEventListener('click', function(event) {
         const cell = event.target.closest('.cell');
         if (!cell || cell.classList.contains('empty-cell')) return;
-        if ((cell.id === 'd1' && cell.classList.contains('default-user-active')) || (cell.id === 'a1' && cell.classList.contains('default-user-active'))) return;
+        if (cell.id === 'd1' && cell.classList.contains('default-user-active')) return;
 
         // === LOGIQUE DE GESTION DE LA CASE C2 ===
         if (cell.id === 'c2') {
-            const choiceButton = event.target.closest('.choice-button');
             const listAddButton = event.target.closest('.list-add-button');
             const locationItem = event.target.closest('.location-item');
+            const contentSpan = cell.querySelector('.cell-content');
 
-            if (choiceButton) {
-                const value = choiceButton.getAttribute('data-value');
-                if (value === 'R') {
-                    handleRChoice(cell);
-                } else {
-                    handleXRChoice(cell, value);
-                }
-            } else if (listAddButton) {
+            if (listAddButton) {
                 handleListAdd(cell);
             } else if (locationItem) {
                 handleLocationItemClick(locationItem);
-            } else if (cell.querySelector('.cell-content')) {
-                showC2Buttons();
+            } else if (contentSpan && (contentSpan.textContent === 'R' || contentSpan.textContent === 'xR')) {
+                // Si on clique sur R ou xR, charger la liste des endroits
+                loadControlLocations();
+            } else if (event.target.id === 'c2') {
+                // Menu contextuel pour C2 (clic droit ou long clic)
+                showC2ContextMenu(event);
             }
             return;
         }
 
         if (event.target.tagName === 'BUTTON') {
             const timeString = new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
-            const cellContent = cell.querySelector('.cell-content');
-            if (cellContent) {
-                cellContent.textContent = timeString;
-                cellContent.classList.remove('placeholder');
-            } else {
-                cell.innerHTML = `<span class="cell-content">${timeString}</span>`;
-            }
-            cell.style.cursor = 'default';
+            cell.innerHTML = `<span class="cell-content">${timeString}</span>`;
             updateResults();
             checkCompletion();
             return;
@@ -816,83 +910,110 @@
         if (dropdownItem) {
             const cellId = cell.id;
             const contentSpan = cell.querySelector('.cell-content');
-
-            if (cellId === 'a1') { 
-                if (dropdownItem.classList.contains('add-item')) {
-                    const name = prompt("Veuillez entrer une nouvelle locale :"); 
-                    if (name && name.trim()) {
-                         const i = createDropdownItem(name.trim()); 
-                         initialLocales.push(name.trim()); 
-                         updateA1MenuWithDefaults(); 
-                         setDefaultLocale(name.trim());
-                    } 
-                    return; 
-                } else {
-                    setDefaultLocale(dropdownItem.textContent.replace(/^★ /, '').replace(/ \(par défaut\)$/, '')); 
-                    updateResults(); 
-                    checkCompletion(); 
-                    if (activeMenu) { activeMenu.classList.remove('show'); activeMenu = null; }
-                    return;
+            
+            if (dropdownItem.classList.contains('add-item')) {
+                let newItem;
+                if (cellId === 'd1') {
+                    newItem = prompt("Veuillez entrer un nouveau prénom :");
+                    if (newItem && newItem.trim()) {
+                        initialUsers.push(newItem.trim());
+                        updateD1MenuWithDefault();
+                        setDefaultUser(newItem.trim());
+                    }
+                } else if (cellId === 'a1') {
+                    newItem = prompt("Veuillez entrer une nouvelle locale :");
+                    if (newItem && newItem.trim()) {
+                        initialLocales.push(newItem.trim());
+                        updateA1Menu();
+                        contentSpan.textContent = newItem.trim();
+                        contentSpan.classList.remove('placeholder');
+                        updateResults();
+                        checkCompletion();
+                    }
                 }
-            }
-
-            if (cellId === 'd1' && dropdownItem.classList.contains('add-item')) { 
-                const name = prompt("Veuillez entrer un nouveau prénom :"); 
-                if (name && name.trim()) { 
-                    const i = createDropdownItem(name.trim()); 
-                    initialUsers.push(name.trim());
-                    updateD1MenuWithDefault(); 
-                    setDefaultUser(name.trim());
-                } 
-                return; 
-            }
-            if (cellId === 'd1' && !dropdownItem.classList.contains('add-item')) { 
-                setDefaultUser(dropdownItem.textContent.replace(/^★ /, '').replace(/ \(par défaut\)$/, '')); 
-                updateResults(); 
-                checkCompletion(); 
-                if (activeMenu) { activeMenu.classList.remove('show'); activeMenu = null; }
-                return; 
-            }
-            if (cellId === 'c3') { 
-                const item = dropdownItem; 
-                const span = cell.querySelector('.cell-content'); 
-                let state = (parseInt(item.dataset.colorState || '0') + 1) % 3; 
-                item.dataset.colorState = state; 
-                item.classList.remove('text-green', 'text-red'); 
-                cell.classList.remove('text-green', 'text-red'); 
-                if (state === 1) { 
-                    item.classList.add('text-green'); 
-                    cell.classList.add('text-green'); 
-                } else if (state === 2) { 
-                    item.classList.add('text-red'); 
-                    cell.classList.add('text-red'); 
-                }
-                span.textContent = item.textContent.trim();
-                span.classList.remove('placeholder');
-                if (activeMenu) { activeMenu.classList.remove('show'); activeMenu = null; }
-                updateResults();
-                checkCompletion();
                 return;
             }
-            contentSpan.textContent = dropdownItem.textContent.trim();
-            contentSpan.classList.remove('placeholder');
+
+            if (cellId === 'd1') {
+                setDefaultUser(dropdownItem.textContent.replace(/^★ /, '').replace(/ \(par défaut\)$/, ''));
+                if (activeMenu) { activeMenu.classList.remove('show'); activeMenu = null; }
+                return;
+            }
+
+            if (cellId === 'c3') {
+                let state = (parseInt(dropdownItem.dataset.colorState || '0') + 1) % 3;
+                dropdownItem.dataset.colorState = state;
+                cell.classList.remove('text-green', 'text-red');
+                if (state === 1) cell.classList.add('text-green');
+                else if (state === 2) cell.classList.add('text-red');
+                contentSpan.textContent = dropdownItem.querySelector('.dropdown-item-content').textContent;
+                contentSpan.classList.remove('placeholder');
+            } else if (cellId === 'a1') {
+                // Quand une locale est sélectionnée, vérifier automatiquement le contrôle
+                const selectedLocale = dropdownItem.textContent;
+                contentSpan.textContent = selectedLocale;
+                contentSpan.classList.remove('placeholder');
+                checkLocaleControlAndDisplay(selectedLocale);
+            } else {
+                contentSpan.textContent = dropdownItem.textContent;
+                contentSpan.classList.remove('placeholder');
+            }
+            
             if (activeMenu) { activeMenu.classList.remove('show'); activeMenu = null; }
             updateResults();
             checkCompletion();
-        } else {
-            const dropdown = cell.querySelector('.dropdown-menu');
-            if (dropdown) {
-                if (activeMenu && activeMenu !== dropdown) {
-                    activeMenu.classList.remove('show');
-                }
-                dropdown.classList.toggle('show');
-                activeMenu = dropdown.classList.contains('show') ? dropdown : null;
-            }
+            return;
+        }
+        
+        const menu = cell.querySelector('.dropdown-menu');
+        if (menu) {
+            if (activeMenu && activeMenu !== menu) activeMenu.classList.remove('show');
+            menu.classList.toggle('show');
+            activeMenu = menu.classList.contains('show') ? menu : null;
         }
     });
 
+    // === NOUVELLE FONCTION : Menu contextuel pour C2 ===
+    function showC2ContextMenu(event) {
+        event.preventDefault();
+        
+        // Créer un menu contextuel simple
+        const contextMenu = document.createElement('div');
+        contextMenu.style.position = 'absolute';
+        contextMenu.style.top = event.pageY + 'px';
+        contextMenu.style.left = event.pageX + 'px';
+        contextMenu.style.backgroundColor = 'white';
+        contextMenu.style.border = '1px solid #ccc';
+        contextMenu.style.borderRadius = '5px';
+        contextMenu.style.padding = '5px';
+        contextMenu.style.zIndex = '1000';
+        contextMenu.style.boxShadow = '0 2px 10px rgba(0,0,0,0.2)';
+        
+        contextMenu.innerHTML = `
+            <div style="padding: 8px; cursor: pointer; border-bottom: 1px solid #eee;" onclick="refreshC2Data()">🔄 Actualiser données</div>
+            <div style="padding: 8px; cursor: pointer;" onclick="addNewResult()">➕ Ajouter résultat</div>
+        `;
+        
+        document.body.appendChild(contextMenu);
+        
+        // Fermer le menu quand on clique ailleurs
+        const closeMenu = function() {
+            document.body.removeChild(contextMenu);
+            document.removeEventListener('click', closeMenu);
+        };
+        
+        setTimeout(() => {
+            document.addEventListener('click', closeMenu);
+        }, 100);
+    }
+
+    // Rendre les fonctions accessibles globalement
+    window.refreshC2Data = refreshC2Data;
+    window.addNewResult = addNewResult;
+
     document.getElementById('refresh-button').addEventListener('click', manualRefresh);
-    });
+});
 </script>
+
 </body>
 </html>
