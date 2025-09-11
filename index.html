@@ -624,35 +624,96 @@ document.addEventListener('DOMContentLoaded', function() {
         const c2Cell = document.getElementById('c2');
         c2Cell.innerHTML = `<span class="cell-content">Analyse en cours...</span>`;
         
-        // Vérifier d'abord si la locale existe dans la base de données
         const url = `${SCRIPT_URL}?locale=${encodeURIComponent(locale)}`;
         
         fetch(url)
             .then(response => response.json())
             .then(data => {
-                console.log('Réponse de l\'API:', data); // Pour le débogage
+                console.log('Réponse de l\'API:', data);
                 if (data.success && data.data && data.data.length > 0) {
-                    // S'il y a des contrôles "OUI", afficher xR (sans couleur initiale)
-                    c2Cell.innerHTML = `<span class="cell-content">xR</span>`;
-                    c2Cell.dataset.hasControl = "true";
+                    // Afficher la liste des contrôles
+                    showC2LocationList();
+                    const container = c2Cell.querySelector('.location-list');
+                    container.innerHTML = '';
+                    
+                    // Ajouter tous les contrôles retournés par l'API
+                    data.data.forEach(location => {
+                        const locationItem = document.createElement('div');
+                        locationItem.className = 'location-item';
+                        locationItem.textContent = location;
+                        locationItem.dataset.colorState = '0'; // Initialiser sans couleur
+                        container.appendChild(locationItem);
+                    });
+                    
+                    // Pas de verrouillage initial - l'utilisateur peut interagir
+                    c2Cell.dataset.locked = "false";
+                    
                 } else {
-                    // Sinon afficher R (sans couleur initiale)
-                    c2Cell.innerHTML = `<span class="cell-content">R</span>`;
-                    c2Cell.dataset.hasControl = "false";
+                    // Aucun contrôle trouvé - afficher liste vide avec option d'ajout manuel
+                    showC2LocationList();
+                    const container = c2Cell.querySelector('.location-list');
+                    const emptyItem = document.createElement('div');
+                    emptyItem.className = 'location-item empty';
+                    emptyItem.textContent = 'Aucun contrôle trouvé';
+                    container.appendChild(emptyItem);
+                    c2Cell.dataset.locked = "false";
                 }
-                c2Cell.dataset.locked = "false";
                 updateResults();
-                checkCompletion();
             })
             .catch(error => {
                 console.error('Erreur de connexion à l\'API:', error);
-                // En cas d'erreur, afficher R par défaut (sans couleur initiale)
-                c2Cell.innerHTML = `<span class="cell-content">R</span>`;
-                c2Cell.dataset.hasControl = "false";
+                showC2LocationList();
+                const container = c2Cell.querySelector('.location-list');
+                const errorItem = document.createElement('div');
+                errorItem.className = 'location-item empty';
+                errorItem.textContent = 'Erreur de chargement';
+                container.appendChild(errorItem);
                 c2Cell.dataset.locked = "false";
                 updateResults();
             });
     }
+    
+    // Nouvelle fonction pour condenser la liste et afficher le comptage
+    function condenseC2List() {
+        const c2Cell = document.getElementById('c2');
+        const locationItems = Array.from(c2Cell.querySelectorAll('.location-item'));
+        
+        // Compter le nombre d'éléments rouges
+        const redCount = locationItems.filter(item => 
+            item.classList.contains('text-red')
+        ).length;
+        
+        // Vider la liste et afficher le résultat condensé
+        c2Cell.innerHTML = `<span class="cell-content">${redCount > 0 ? redCount + 'R' : 'R'}</span>`;
+        
+        // Appliquer la couleur rouge si au moins un élément est rouge
+        c2Cell.classList.remove('text-green', 'text-red');
+        if (redCount > 0) {
+            c2Cell.classList.add('text-red');
+        }
+        
+        // Marquer la cellule comme verrouillée
+        c2Cell.dataset.locked = "true";
+        updateResults();
+        checkCompletion();
+    }
+    
+    // Modifier le gestionnaire de clic externe pour utiliser la nouvelle fonction
+    document.addEventListener('click', function(event) {
+        const c2Cell = document.getElementById('c2');
+        const isClickInsideC2 = c2Cell.contains(event.target);
+    
+        const locationListExists = c2Cell.querySelector('.location-list');
+        
+        if (!isClickInsideC2 && locationListExists && c2Cell.dataset.locked === "false") {
+            condenseC2List(); // Utiliser la nouvelle fonction de condensation
+        }
+    
+        if (!event.target.closest('.cell') && activeMenu) {
+            activeMenu.classList.remove('show');
+            activeMenu = null;
+        }
+    });
 
     function loadControlLocations() {
         const c2Cell = document.getElementById('c2');
