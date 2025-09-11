@@ -437,7 +437,7 @@
 </div>
 
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function() {
     
     const initialUsers = ['Anniva', 'Tina'];
     let initialLocales = ['P1', 'P2', 'P3', 'P4', 'P5', 'P6', 'P7', 'P8', 'P9', 'P10'];
@@ -776,25 +776,34 @@
     document.addEventListener('click', function(event) {
         const c2Cell = document.getElementById('c2');
         const isClickInsideC2 = c2Cell.contains(event.target);
-    
-        if (!isClickInsideC2 && !c2Cell.dataset.locked) {
-            const locationListExists = c2Cell.querySelector('.location-list');
-            if (locationListExists) {
-                const locationItems = Array.from(c2Cell.querySelectorAll('.location-item'));
-                const hasRed = locationItems.some(item => item.classList.contains('text-red'));
-                const hasGreen = locationItems.some(item => item.classList.contains('text-green'));
-                c2Cell.innerHTML = `<span class="cell-content">R</span>`;
-                c2Cell.classList.remove('text-green', 'text-red');
-                if (hasRed) {
-                    c2Cell.classList.add('text-red');
-                } else if (hasGreen) {
-                    c2Cell.classList.add('text-green');
-                }
-                c2Cell.dataset.locked = "true";
-                updateResults();
-                checkCompletion();
+
+        // 1. Vérifier d'abord si une liste est affichée et active
+        const locationListExists = c2Cell.querySelector('.location-list');
+        
+        // 2. SI une liste est active, ALORS vérifier si la cellule est déverrouillée
+        if (!isClickInsideC2 && locationListExists && c2Cell.dataset.locked === "false") {
+            const locationItems = Array.from(c2Cell.querySelectorAll('.location-item'));
+            const hasRed = locationItems.some(item => item.classList.contains('text-red'));
+            const hasGreen = locationItems.some(item => item.classList.contains('text-green'));
+            
+            // Vider la liste et afficher le résultat condensé
+            c2Cell.innerHTML = `<span class="cell-content">R</span>`;
+            c2Cell.classList.remove('text-green', 'text-red');
+            
+            // Appliquer la couleur en fonction du contenu de l'ancienne liste
+            if (hasRed) {
+                c2Cell.classList.add('text-red');
+            } else if (hasGreen) {
+                c2Cell.classList.add('text-green');
             }
+            
+            // FINALEMENT, marquer la cellule comme verrouillée
+            c2Cell.dataset.locked = "true";
+            updateResults();
+            checkCompletion();
         }
+
+        // Gestion des menus déroulants
         if (!event.target.closest('.cell') && activeMenu) {
             activeMenu.classList.remove('show');
             activeMenu = null;
