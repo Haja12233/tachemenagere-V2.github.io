@@ -688,6 +688,7 @@
                     emptyItem.textContent = 'Aucun contrôle trouvé';
                     container.appendChild(emptyItem);
                 }
+                c2Cell.dataset.locked = "false";
                 updateResults();
             })
             .catch(error => {
@@ -699,6 +700,7 @@
                 errorItem.className = 'location-item empty';
                 errorItem.textContent = 'Erreur de chargement';
                 container.appendChild(errorItem);
+                c2Cell.dataset.locked = "false";
                 updateResults();
             });
     }
