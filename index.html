@@ -640,6 +640,7 @@
                     c2Cell.innerHTML = `<span class="cell-content">R</span>`;
                     c2Cell.dataset.hasControl = "false";
                 }
+                c2Cell.dataset.locked = "false";
                 updateResults();
                 checkCompletion();
             })
@@ -648,6 +649,7 @@
                 // En cas d'erreur, afficher R par défaut (sans couleur initiale)
                 c2Cell.innerHTML = `<span class="cell-content">R</span>`;
                 c2Cell.dataset.hasControl = "false";
+                c2Cell.dataset.locked = "false";
                 updateResults();
             });
     }
