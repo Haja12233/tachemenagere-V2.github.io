@@ -576,6 +576,7 @@
             if (!cell) return;
             if (id === 'c2') {
                 showC2Buttons();
+                cell.dataset.locked = "false";
             } else if (id === 'a2' || id === 'a3') {
                 cell.innerHTML = `<button>${id === 'a2' ? 'Début' : 'Fin'}</button>`;
             } else {
