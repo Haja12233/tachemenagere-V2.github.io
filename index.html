@@ -71,7 +71,71 @@
         text-align: center;
         word-break: break-word;
     }
+    /* Styles responsives et ajustement de la taille de police */
+.cell-content {
+    font-size: 12px; /* Taille réduite */
+    font-weight: 500;
+    text-align: center;
+    padding: 6px 4px; /* Padding réduit */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Adaptation responsive pour les écrans plus petits */
+@media (max-width: 768px) {
+    .cell-content {
+        font-size: 11px; /* Encore plus petit sur mobile */
+        padding: 4px 2px;
+    }
     
+    .grid-container {
+        gap: 8px; /* Espacement réduit entre les cellules */
+        padding: 10px;
+    }
+    
+    .cell {
+        min-height: 35px; /* Hauteur réduite */
+    }
+    
+    /* Ajustement spécifique pour le texte "Sélectionnez Locale" */
+    .placeholder-text {
+        font-size: 11px !important;
+        color: #888;
+        font-style: italic;
+    }
+    
+    /* Réduction de la taille des menus déroulants */
+    .locale-dropdown {
+        font-size: 12px;
+        padding: 6px 8px;
+    }
+    
+    /* Ajustement des boutons */
+    .action-button {
+        font-size: 11px;
+        padding: 5px 8px;
+    }
+    
+    /* Pour les listes de localisation dans C2 */
+    .location-item {
+        font-size: 11px;
+        padding: 4px 6px;
+    }
+    
+    /* Header plus compact */
+    .grid-header {
+        font-size: 12px;
+        padding: 8px 4px;
+    }
+    
+    /* Ajustement global du conteneur */
+    .grid-container {
+        max-width: 100%;
+        margin: 0 auto;
+        padding: 15px;
+        box-sizing: border-box;
+    }    
     .cell#c2 {
         display: block;
         padding: 8px;
@@ -557,9 +621,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function showC2Buttons() {
         const c2Cell = document.getElementById('c2');
-        c2Cell.innerHTML = `<span class="cell-content placeholder">Sélectionnez une locale</span>`;
-    }
-    
+        cell.innerHTML = `<span class="cell-content placeholder-text">Sélectionnez Locale</span>`;
+    }  
     function showC2LocationList() {
         const c2Cell = document.getElementById('c2');
         c2Cell.innerHTML = `
