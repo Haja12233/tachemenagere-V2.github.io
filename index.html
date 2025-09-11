@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestion de Tâche</title>
+    <title>Matrice 4x4 - Gestion de Tâche</title>
     <style>
     :root {
     --primary-color: #0056b3;
@@ -703,79 +703,6 @@
             });
     }
 
-    // === NOUVELLE FONCTION : Actualiser les données C2 ===
-    function refreshC2Data() {
-        const c2Cell = document.getElementById('c2');
-        const locale = document.querySelector('#a1 .cell-content').textContent.trim();
-        
-        if (!locale || locale === 'Locale') {
-            showNotification('Veuillez d\'abord sélectionner une locale !');
-            return;
-        }
-        
-        c2Cell.innerHTML = `<span class="cell-content">Actualisation...</span>`;
-        
-        // Recharger les données depuis la base
-        const url = `${SCRIPT_URL}?locale=${encodeURIComponent(locale)}`;
-        
-        fetch(url)
-            .then(response => response.json())
-            .then(data => {
-                if (data.success && data.data && data.data.length > 0) {
-                    // S'il y a des contrôles "OUI", afficher xR
-                    c2Cell.innerHTML = `<span class="cell-content">xR</span>`;
-                    c2Cell.classList.add('text-red');
-                    c2Cell.dataset.hasControl = "true";
-                    showNotification('Données C2 actualisées avec xR !');
-                } else {
-                    // Sinon afficher R
-                    c2Cell.innerHTML = `<span class="cell-content">R</span>`;
-                    c2Cell.classList.add('text-green');
-                    c2Cell.dataset.hasControl = "false";
-                    showNotification('Données C2 actualisées avec R !');
-                }
-                updateResults();
-                checkCompletion();
-            })
-            .catch(error => {
-                console.error('Erreur lors de l\'actualisation:', error);
-                showNotification('Erreur lors de l\'actualisation !');
-                // Restaurer la valeur précédente
-                const currentValue = c2Cell.dataset.hasControl === "true" ? "xR" : "R";
-                const isRed = c2Cell.dataset.hasControl === "true";
-                c2Cell.innerHTML = `<span class="cell-content">${currentValue}</span>`;
-                c2Cell.classList.remove('text-green', 'text-red');
-                if (isRed) c2Cell.classList.add('text-red');
-                else c2Cell.classList.add('text-green');
-            });
-    }
-
-    // === NOUVELLE FONCTION : Ajouter un nouveau résultat ===
-    function addNewResult() {
-        const c2Cell = document.getElementById('c2');
-        const newResult = prompt("Entrez le nouveau résultat (R ou xR) :");
-        
-        if (newResult && (newResult.toUpperCase() === 'R' || newResult.toUpperCase() === 'XR')) {
-            const formattedResult = newResult.toUpperCase() === 'XR' ? 'xR' : 'R';
-            
-            c2Cell.innerHTML = `<span class="cell-content">${formattedResult}</span>`;
-            c2Cell.classList.remove('text-green', 'text-red');
-            
-            if (formattedResult === 'xR') {
-                c2Cell.classList.add('text-red');
-                c2Cell.dataset.hasControl = "true";
-            } else {
-                c2Cell.classList.add('text-green');
-                c2Cell.dataset.hasControl = "false";
-            }
-            
-            updateResults();
-            showNotification(`Nouveau résultat "${formattedResult}" ajouté !`);
-        } else if (newResult) {
-            showNotification('Veuillez entrer R ou xR !');
-        }
-    }
-
     function handleListAdd(cell) {
         const newLocation = prompt("Veuillez entrer le nom du nouvel endroit :");
         if (newLocation && newLocation.trim()) {
@@ -790,7 +717,6 @@
             newLocationItem.dataset.colorState = '0';
             container.appendChild(newLocationItem);
             updateResults();
-            showNotification('Nouvel endroit ajouté !');
         }
     }
 
@@ -828,6 +754,71 @@
         }
     }
 
+    // Fonction pour enregistrer l'état actuel de C2
+    function saveC2State() {
+        const c2Cell = document.getElementById('c2');
+        const contentSpan = c2Cell.querySelector('.cell-content');
+        
+        if (contentSpan && (contentSpan.textContent === 'R' || contentSpan.textContent === 'xR')) {
+            // Créer un objet pour stocker l'état
+            let savedStates = JSON.parse(localStorage.getItem('c2SavedStates') || '[]');
+            
+            const state = {
+                timestamp: new Date().toLocaleString('fr-FR'),
+                value: contentSpan.textContent,
+                color: c2Cell.classList.contains('text-red') ? 'red' : 
+                       c2Cell.classList.contains('text-green') ? 'green' : 'none'
+            };
+            
+            savedStates.push(state);
+            localStorage.setItem('c2SavedStates', JSON.stringify(savedStates));
+            
+            showNotification('État enregistré !');
+        }
+    }
+
+    // Fonction pour afficher les états enregistrés
+    function showSavedStates() {
+        const savedStates = JSON.parse(localStorage.getItem('c2SavedStates') || '[]');
+        if (savedStates.length === 0) {
+            alert('Aucun état enregistré.');
+            return;
+        }
+        
+        let statesText = 'États enregistrés de C2:\n\n';
+        savedStates.forEach((state, index) => {
+            statesText += `${index + 1}. ${state.timestamp} - ${state.value}`;
+            if (state.color === 'red') statesText += ' (xR)';
+            else if (state.color === 'green') statesText += ' (R)';
+            statesText += '\n';
+        });
+        
+        alert(statesText);
+    }
+
+    // Fonction pour restaurer un état précédent
+    function restoreC2State(index) {
+        const savedStates = JSON.parse(localStorage.getItem('c2SavedStates') || '[]');
+        if (index >= 0 && index < savedStates.length) {
+            const state = savedStates[index];
+            const c2Cell = document.getElementById('c2');
+            
+            c2Cell.innerHTML = `<span class="cell-content">${state.value}</span>`;
+            c2Cell.classList.remove('text-green', 'text-red');
+            
+            if (state.color === 'red') {
+                c2Cell.classList.add('text-red');
+                c2Cell.dataset.hasControl = "true";
+            } else if (state.color === 'green') {
+                c2Cell.classList.add('text-green');
+                c2Cell.dataset.hasControl = "false";
+            }
+            
+            updateResults();
+            showNotification(`État restauré: ${state.value}`);
+        }
+    }
+
     // --- Configuration Initiale ---
     updateA1Menu();
     updateD1MenuWithDefault();
@@ -848,6 +839,12 @@
     document.addEventListener('click', function(event) {
         const c2Cell = document.getElementById('c2');
         const isClickInsideC2 = c2Cell.contains(event.target);
+    
+        // Double-clic sur C2 pour enregistrer l'état
+        if (isClickInsideC2 && event.detail === 2) {
+            saveC2State();
+            return;
+        }
     
         if (!isClickInsideC2 && !c2Cell.dataset.locked) {
             const locationListExists = c2Cell.querySelector('.location-list');
@@ -891,9 +888,10 @@
             } else if (contentSpan && (contentSpan.textContent === 'R' || contentSpan.textContent === 'xR')) {
                 // Si on clique sur R ou xR, charger la liste des endroits
                 loadControlLocations();
-            } else if (event.target.id === 'c2') {
-                // Menu contextuel pour C2 (clic droit ou long clic)
-                showC2ContextMenu(event);
+            } else if (cell.querySelector('.cell-content')) {
+                cell.dataset.locked = "false";
+                showC2Buttons();
+                updateResults();
             }
             return;
         }
@@ -973,43 +971,22 @@
         }
     });
 
-    // === NOUVELLE FONCTION : Menu contextuel pour C2 ===
-    function showC2ContextMenu(event) {
-        event.preventDefault();
-        
-        // Créer un menu contextuel simple
-        const contextMenu = document.createElement('div');
-        contextMenu.style.position = 'absolute';
-        contextMenu.style.top = event.pageY + 'px';
-        contextMenu.style.left = event.pageX + 'px';
-        contextMenu.style.backgroundColor = 'white';
-        contextMenu.style.border = '1px solid #ccc';
-        contextMenu.style.borderRadius = '5px';
-        contextMenu.style.padding = '5px';
-        contextMenu.style.zIndex = '1000';
-        contextMenu.style.boxShadow = '0 2px 10px rgba(0,0,0,0.2)';
-        
-        contextMenu.innerHTML = `
-            <div style="padding: 8px; cursor: pointer; border-bottom: 1px solid #eee;" onclick="refreshC2Data()">🔄 Actualiser données</div>
-            <div style="padding: 8px; cursor: pointer;" onclick="addNewResult()">➕ Ajouter résultat</div>
-        `;
-        
-        document.body.appendChild(contextMenu);
-        
-        // Fermer le menu quand on clique ailleurs
-        const closeMenu = function() {
-            document.body.removeChild(contextMenu);
-            document.removeEventListener('click', closeMenu);
-        };
-        
-        setTimeout(() => {
-            document.addEventListener('click', closeMenu);
-        }, 100);
-    }
-
-    // Rendre les fonctions accessibles globalement
-    window.refreshC2Data = refreshC2Data;
-    window.addNewResult = addNewResult;
+    // Ajout d'un raccourci clavier pour sauvegarder (Ctrl+S)
+    document.addEventListener('keydown', function(event) {
+        if (event.ctrlKey && event.key === 's') {
+            event.preventDefault();
+            const c2Cell = document.getElementById('c2');
+            const contentSpan = c2Cell.querySelector('.cell-content');
+            if (contentSpan && (contentSpan.textContent === 'R' || contentSpan.textContent === 'xR')) {
+                saveC2State();
+            }
+        }
+        // Raccourci pour afficher les états enregistrés (Ctrl+H)
+        if (event.ctrlKey && event.key === 'h') {
+            event.preventDefault();
+            showSavedStates();
+        }
+    });
 
     document.getElementById('refresh-button').addEventListener('click', manualRefresh);
 });
