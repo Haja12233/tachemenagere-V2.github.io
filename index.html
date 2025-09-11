@@ -630,49 +630,88 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(response => response.json())
             .then(data => {
                 console.log('Réponse de l\'API:', data);
+                
                 if (data.success && data.data && data.data.length > 0) {
-                    // Afficher la liste des contrôles
+                    // Cas 1 : Contrôles trouvés - afficher la liste
                     showC2LocationList();
                     const container = c2Cell.querySelector('.location-list');
                     container.innerHTML = '';
                     
-                    // Ajouter tous les contrôles retournés par l'API
                     data.data.forEach(location => {
                         const locationItem = document.createElement('div');
                         locationItem.className = 'location-item';
                         locationItem.textContent = location;
-                        locationItem.dataset.colorState = '0'; // Initialiser sans couleur
+                        locationItem.dataset.colorState = '0';
                         container.appendChild(locationItem);
                     });
                     
-                    // Pas de verrouillage initial - l'utilisateur peut interagir
-                    c2Cell.dataset.locked = "false";
-                    
                 } else {
-                    // Aucun contrôle trouvé - afficher liste vide avec option d'ajout manuel
-                    showC2LocationList();
-                    const container = c2Cell.querySelector('.location-list');
-                    const emptyItem = document.createElement('div');
-                    emptyItem.className = 'location-item empty';
-                    emptyItem.textContent = 'Aucun contrôle trouvé';
-                    container.appendChild(emptyItem);
-                    c2Cell.dataset.locked = "false";
+                    // Cas 2 : Aucun contrôle trouvé - afficher directement "R"
+                    c2Cell.innerHTML = `<span class="cell-content">R</span>`;
+                    c2Cell.dataset.hasControl = "false";
                 }
+                
+                c2Cell.dataset.locked = "false";
                 updateResults();
+                checkCompletion();
             })
             .catch(error => {
                 console.error('Erreur de connexion à l\'API:', error);
-                showC2LocationList();
-                const container = c2Cell.querySelector('.location-list');
-                const errorItem = document.createElement('div');
-                errorItem.className = 'location-item empty';
-                errorItem.textContent = 'Erreur de chargement';
-                container.appendChild(errorItem);
+                // Cas 3 : Erreur de connexion - afficher "R" par défaut
+                c2Cell.innerHTML = `<span class="cell-content">R</span>`;
+                c2Cell.dataset.hasControl = "false";
                 c2Cell.dataset.locked = "false";
                 updateResults();
             });
     }
     
+    // Et modifier aussi la fonction loadControlLocations pour le même comportement
+    function loadControlLocations() {
+        const c2Cell = document.getElementById('c2');
+        const locale = document.querySelector('#a1 .cell-content').textContent.trim();
+        
+        if (!locale || locale === 'Locale') {
+            showC2Buttons();
+            return;
+        }
+        
+        c2Cell.innerHTML = `<span class="cell-content">Chargement...</span>`;
+        
+        const url = `${SCRIPT_URL}?locale=${encodeURIComponent(locale)}`;
+        
+        fetch(url)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success && data.data && data.data.length > 0) {
+                    // Contrôles trouvés - afficher la liste
+                    showC2LocationList();
+                    const container = c2Cell.querySelector('.location-list');
+                    container.innerHTML = '';
+                    
+                    data.data.forEach(location => {
+                        const locationItem = document.createElement('div');
+                        locationItem.className = 'location-item';
+                        locationItem.textContent = location;
+                        locationItem.dataset.colorState = '0';
+                        container.appendChild(locationItem);
+                    });
+                } else {
+                    // Aucun contrôle trouvé - afficher directement "R"
+                    c2Cell.innerHTML = `<span class="cell-content">R</span>`;
+                    c2Cell.dataset.hasControl = "false";
+                }
+                c2Cell.dataset.locked = "false";
+                updateResults();
+            })
+            .catch(error => {
+                console.error('Erreur de connexion à l\'API:', error);
+                // Erreur - afficher "R" par défaut
+                c2Cell.innerHTML = `<span class="cell-content">R</span>`;
+                c2Cell.dataset.hasControl = "false";
+                c2Cell.dataset.locked = "false";
+                updateResults();
+            });
+    }   
     // Nouvelle fonction pour condenser la liste et afficher le comptage
     function condenseC2List() {
         const c2Cell = document.getElementById('c2');
