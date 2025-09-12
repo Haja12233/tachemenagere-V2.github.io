@@ -209,7 +209,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 if (!contentSpan && !locationList) return false;
                 
-                if (contentSpan && (contentSpan.textContent.trim() === 'R' || contentSpan.textContent.trim() === 'xR')) {
+                if (contentSpan && (contentSpan.textContent.trim().includes('R'))) {
                     return true;
                 }
                 
@@ -420,34 +420,32 @@ document.addEventListener('DOMContentLoaded', function() {
             });
     }
 
-     function condenseC2List() {
+    function condenseC2List() {
         const c2Cell = document.getElementById('c2');
         const locationItems = Array.from(c2Cell.querySelectorAll('.location-item'));
-    
-        const redCount = locationItems.filter(item =>
+
+        const redCount = locationItems.filter(item => 
             item.classList.contains('text-red')
         ).length;
-    
-        const greenCount = locationItems.filter(item =>
+
+        const greenCount = locationItems.filter(item => 
             item.classList.contains('text-green')
         ).length;
-    
+        
         // Réinitialise les classes de couleur de la cellule
         c2Cell.classList.remove('text-green', 'text-red');
-    
+
         // Détermine le contenu et la couleur de la cellule condensée
         if (redCount > 0) {
             c2Cell.innerHTML = `<span class="cell-content">${redCount}R</span>`;
             c2Cell.classList.add('text-red');
         } else if (greenCount > 0) {
-            // Nouvelle condition pour le cas "tout vert"
             c2Cell.innerHTML = `<span class="cell-content">xR</span>`;
             c2Cell.classList.add('text-green');
         } else {
-            // Cas par défaut si aucun élément n'est marqué
             c2Cell.innerHTML = `<span class="cell-content">R</span>`;
         }
-    
+
         c2Cell.dataset.locked = "true";
         updateResults();
         checkCompletion();
@@ -570,7 +568,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     handleListAdd(cell);
                 } else if (locationItem) {
                     handleLocationItemClick(locationItem);
-                } else if (contentSpan && (contentSpan.textContent === 'R' || contentSpan.textContent === 'xR')) {
+                } else if (contentSpan && (contentSpan.textContent.includes('R'))) {
                     loadControlLocations();
                 } else if (cell.querySelector('.cell-content')) {
                     cell.dataset.locked = "false";
