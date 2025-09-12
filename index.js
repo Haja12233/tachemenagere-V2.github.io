@@ -634,7 +634,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     if (state === 1) cell.classList.add('text-green');
                     else if (state === 2) cell.classList.add('text-red');
                     
-                    contentSpan.textContent = dropdownItem.querySelector('.dropdown-item-content').textContent;
+                    // Ligne modifiée ici pour afficher "X"
+                    contentSpan.textContent = 'X';
                     contentSpan.classList.remove('placeholder');
                 } else if (cellId === 'a1') {
                     const selectedLocale = dropdownItem.textContent;
