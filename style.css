@@ -525,3 +525,11 @@ h1 {
         padding: 8px 16px;
     }
 }
+/* Classes pour les couleurs de fond des cellules */
+.text-red {
+    background-color: #ff9999; /* Une couleur rouge claire */
+}
+
+.text-green {
+    background-color: #99ff99; /* Une couleur verte claire */
+}
