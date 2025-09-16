@@ -1,4 +1,3 @@
-/* style.css */
 :root {
     --primary-color: #0056b3;
     --primary-hover-color: #00448a;
@@ -19,32 +18,32 @@ body {
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    min-height: 10vh;
+    min-height: 100vh;
     margin: 0;
-    padding: 20px;
+    padding: 8px;
 }
 
 .container {
-    width: 100%;
-    max-width: 700px;
+    width: 98%;
+    max-width: 450px;
     background: var(--card-bg-color);
-    padding: 25px;
-    border-radius: 16px;
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+    padding: 12px;
+    border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
 }
 
 h1 {
     text-align: center;
     color: var(--primary-color);
-    margin-bottom: 25px;
-    font-size: clamp(1.2rem, 4vw, 1.8rem);
+    margin-bottom: 15px;
+    font-size: 1.4rem;
     font-weight: 600;
 }
 
 .grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 12px;
+    gap: 6px;
 }
 
 .cell {
@@ -55,18 +54,18 @@ h1 {
     align-items: center;
     aspect-ratio: 1/1;
     border: 1px solid var(--border-color);
-    border-radius: 10px;
+    border-radius: 6px;
     color: var(--text-color);
     background-color: var(--card-bg-color);
     cursor: pointer;
     transition: all 0.2s ease-in-out;
-    padding: 10px;
+    padding: 4px;
     text-align: center;
     word-break: break-word;
     box-sizing: border-box;
 }
 
-/* Texte principal responsive */
+/* Texte principal unifié */
 .cell-content {
     font-weight: 500;
     text-align: center;
@@ -77,9 +76,9 @@ h1 {
     justify-content: center;
     width: 100%;
     height: 100%;
-    padding: 4px;
+    padding: 2px;
     box-sizing: border-box;
-    font-size: clamp(10px, 2.5vw, 16px);
+    font-size: 11px;
 }
 
 /* Pour les boutons */
@@ -89,33 +88,34 @@ h1 {
     border: none;
     background: var(--primary-color);
     color: white;
-    border-radius: 8px;
+    border-radius: 5px;
     cursor: pointer;
     font-weight: bold;
     transition: background-color 0.2s;
-    padding: 5px;
-    font-size: clamp(10px, 2vw, 14px);
+    padding: 3px;
+    font-size: 9px;
 }
 
 /* Texte des placeholders */
 .cell-content.placeholder {
     font-style: italic;
     color: var(--secondary-text-color);
-    font-size: clamp(9px, 2vw, 14px);
+    font-size: 9px;
 }
 
 /* Ajustement spécifique pour le texte "Sélectionnez Locale" */
 .placeholder-text {
     color: #888;
     font-style: italic;
-    font-size: clamp(9px, 2vw, 13px) !important;
+    font-size: 9px !important;
 }
 
 .cell#c2 {
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 8px;
+    padding: 4px;
 }
 
 .cell:hover:not(.empty-cell):not(.default-user-active) {
@@ -131,13 +131,13 @@ h1 {
 
 /* Texte spécifique pour C2 */
 #c2 .cell-content {
-    font-size: clamp(12px, 3vw, 18px);
+    font-size: 12px;
     font-weight: 500;
 }
 
 .cell .button-container {
     display: flex;
-    gap: 8px;
+    gap: 5px;
     width: 100%;
     height: 100%;
     justify-content: center;
@@ -150,15 +150,31 @@ h1 {
     background: var(--bg-color);
     color: var(--primary-color);
     border: 1px solid var(--primary-color);
-    border-radius: 8px;
+    border-radius: 5px;
     font-weight: bold;
     transition: all 0.2s;
-    font-size: clamp(12px, 2.5vw, 16px);
+    font-size: 11px;
 }
 
 .cell .choice-button:hover {
     background: var(--primary-color);
     color: white;
+}
+.cell-footer {
+    font-size: 9px;
+    color: #555;
+    margin-top: 2px;
+    text-align: center;
+}
+/* Ajustement pour les dropdown des cases facultatives */
+.optional-cell .dropdown-menu {
+    top: calc(100% + 3px);
+    bottom: auto;
+}
+
+/* S'assurer que les dropdown sont visibles */
+.dropdown-menu {
+    z-index: 1000;
 }
 
 /* Styles pour la liste des lieux */
@@ -174,22 +190,22 @@ h1 {
 .location-list {
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: 2px;
     width: 100%;
     max-height: 80%;
     overflow-y: auto;
 }
 
 .location-item {
-    padding: 6px 8px;
+    padding: 3px 5px;
     border: 1px solid var(--border-color);
-    border-radius: 8px;
+    border-radius: 5px;
     background-color: var(--card-bg-color);
     text-align: center;
     cursor: pointer;
     transition: all 0.2s ease-in-out;
-    font-size: clamp(9px, 2vw, 13px);
-    margin: 2px 0;
+    font-size: 9px;
+    margin: 1px 0;
     box-sizing: border-box;
 }
 
@@ -203,16 +219,16 @@ h1 {
 }
 
 .list-add-button {
-    padding: 4px 6px;
+    padding: 2px 4px;
     border: 1px solid var(--border-color);
-    border-radius: 8px;
+    border-radius: 5px;
     background-color: var(--primary-color);
     color: white;
     font-weight: bold;
     text-align: center;
     cursor: pointer;
     transition: background-color 0.2s;
-    font-size: clamp(14px, 3vw, 20px);
+    font-size: 12px;
     width: 100%;
     margin-top: auto;
 }
@@ -223,16 +239,16 @@ h1 {
 
 .add-button {
     width: 100%;
-    padding: 8px;
+    padding: 5px;
     background-color: var(--primary-color);
     color: white;
     border: none;
-    border-radius: 8px;
+    border-radius: 5px;
     font-weight: bold;
     cursor: pointer;
     transition: background-color 0.2s;
-    margin-top: 8px;
-    font-size: clamp(16px, 3vw, 24px);
+    margin-top: 5px;
+    font-size: 12px;
     line-height: 1;
 }
 
@@ -243,29 +259,29 @@ h1 {
 .dropdown-menu {
     display: none;
     position: absolute;
-    top: calc(100% + 5px);
+    top: calc(100% + 3px);
     left: 0;
     width: 100%;
     background-color: var(--card-bg-color);
     border: 1px solid var(--border-color);
-    border-radius: 10px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-    z-index: 10;
-    max-height: 200px;
+    border-radius: 6px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    z-index: 100; /* Ajouté ou modifié */
+    max-height: 120px;
     overflow-y: auto;
 }
 
 .dropdown-menu.show { display: block; }
 
 .dropdown-item {
-    padding: 10px 12px;
+    padding: 6px 8px;
     cursor: pointer;
     border-bottom: 1px solid var(--border-color);
     transition: background-color 0.2s;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    font-size: clamp(12px, 2.5vw, 16px);
+    font-size: 10px;
 }
 
 .dropdown-item:last-child { border-bottom: none; }
@@ -273,21 +289,22 @@ h1 {
 .dropdown-item-content { flex-grow: 1; }
 
 .add-item {
-    font-size: clamp(16px, 3vw, 24px);
-    padding: 8px 15px;
+    font-size: 14px;
+    padding: 5px 10px;
     color: var(--primary-color);
     font-weight: bold;
     text-align: center;
 }
 
-.text-green {
+/* Styles pour le texte et le fond de la case C3 */
+#c3.text-green {
+    background-color: #99ff99;
     color: #28a745;
-    font-weight: bold;
 }
 
-.text-red {
+#c3.text-red {
+    background-color: #ff9999;
     color: #dc3545;
-    font-weight: bold;
 }
 
 .default-user {
@@ -313,36 +330,36 @@ h1 {
 }
 
 #refresh-button {
-    margin-top: 25px;
-    padding: 12px 25px;
+    margin-top: 15px;
+    padding: 8px 16px;
     background-color: var(--success-color);
     color: white;
     border: none;
-    border-radius: 8px;
+    border-radius: 5px;
     font-weight: bold;
     cursor: pointer;
     transition: background-color 0.2s, transform 0.2s;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    font-size: clamp(14px, 2vw, 18px);
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+    font-size: 12px;
     width: 100%;
 }
 
 #refresh-button:hover {
     background-color: var(--success-hover-color);
-    transform: translateY(-2px);
+    transform: translateY(-1px);
 }
 
 #notification-banner {
     position: fixed;
-    top: 20px;
+    top: 10px;
     left: 50%;
     transform: translateX(-50%);
-    padding: 12px 25px;
+    padding: 8px 16px;
     background-color: var(--success-color);
     color: white;
     font-weight: bold;
-    border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    border-radius: 5px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
     z-index: 100;
     opacity: 0;
     visibility: hidden;
@@ -350,7 +367,7 @@ h1 {
     pointer-events: none;
     max-width: 90%;
     text-align: center;
-    font-size: clamp(14px, 3vw, 18px);
+    font-size: 12px;
 }
 
 #notification-banner.show {
@@ -360,176 +377,78 @@ h1 {
 
 /* Scrollbar Style */
 ::-webkit-scrollbar {
-    width: 8px;
+    width: 5px;
 }
 
 ::-webkit-scrollbar-track {
     background: #f1f1f1;
-    border-radius: 10px;
+    border-radius: 6px;
 }
 
 ::-webkit-scrollbar-thumb {
     background: #c0c0c0;
-    border-radius: 10px;
+    border-radius: 6px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
     background: #a0a0a0;
 }
 
-/* Media queries pour différents breakpoints */
-@media (max-width: 768px) {
-    .container {
-        padding: 15px;
-    }
-    
-    .grid {
-        gap: 10px;
-    }
-    
-    .cell {
-        padding: 6px;
-    }
-    
-    .cell-content {
-        font-size: clamp(9px, 2vw, 14px);
-    }
-    
-    .cell-content.placeholder {
-        font-size: clamp(8px, 1.8vw, 12px);
-    }
-    
-    #c2 .cell-content {
-        font-size: clamp(10px, 2.5vw, 16px);
-    }
-    
-    .location-item {
-        font-size: clamp(8px, 1.8vw, 12px);
-        padding: 4px 6px;
-    }
-    
-    .list-add-button {
-        font-size: clamp(12px, 2.5vw, 16px);
-        padding: 3px 5px;
-    }
-    
-    .dropdown-item {
-        font-size: clamp(10px, 2vw, 14px);
-        padding: 8px 10px;
-    }
-    
-    .choice-button {
-        font-size: clamp(10px, 2vw, 14px);
-    }
+/* Styles pour les boutons d'action dans A1 */
+#a1 .action-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    width: 100%;
+    position: absolute;
+    bottom: 5px;
+    left: 0;
+    padding: 0 5px;
+    box-sizing: border-box;
 }
 
-@media (max-width: 480px) {
-    body {
-        padding: 10px;
-    }
-    
-    .container {
-        padding: 12px;
-    }
-    
-    .grid {
-        gap: 8px;
-    }
-    
-    h1 {
-        font-size: clamp(1rem, 4vw, 1.5rem);
-        margin-bottom: 20px;
-    }
-    
-    .cell {
-        padding: 4px;
-    }
-    
-    .cell-content {
-        font-size: clamp(8px, 1.8vw, 12px);
-    }
-    
-    .cell button {
-        font-size: clamp(8px, 1.5vw, 12px);
-    }
-    
-    .cell-content.placeholder {
-        font-size: clamp(7px, 1.5vw, 10px);
-    }
-    
-    #c2 .cell-content {
-        font-size: clamp(9px, 2vw, 14px);
-    }
-    
-    .location-item {
-        font-size: clamp(7px, 1.5vw, 10px);
-        padding: 3px 5px;
-    }
-    
-    .list-add-button {
-        font-size: clamp(10px, 2vw, 14px);
-    }
-    
-    .dropdown-item {
-        font-size: clamp(9px, 1.8vw, 12px);
-        padding: 6px 8px;
-    }
-    
-    #refresh-button {
-        font-size: clamp(12px, 1.8vw, 16px);
-        padding: 10px 20px;
-        margin-top: 20px;
-    }
-    
-    .choice-button {
-        font-size: clamp(9px, 1.8vw, 12px);
-    }
+.pause-btn, .fin-btn {
+    padding: 2px 4px;
+    border: 1px solid var(--border-color);
+    border-radius: 2px;
+    background-color: #f8f9fa;
+    color: var(--text-color);
+    font-size: 8px;
+    cursor: pointer;
+    transition: background-color 0.2s;
 }
 
-@media (max-width: 320px) {
-    .container {
-        padding: 10px;
-    }
-    
-    .grid {
-        gap: 6px;
-    }
-    
-    .cell-content {
-        font-size: clamp(7px, 1.5vw, 10px);
-    }
-    
-    .cell-content.placeholder {
-        font-size: clamp(6px, 1.2vw, 8px);
-    }
-    
-    #c2 .cell-content {
-        font-size: clamp(8px, 1.8vw, 12px);
-    }
-    
-    .location-item {
-        font-size: clamp(6px, 1.2vw, 8px);
-    }
-    
-    .list-add-button {
-        font-size: clamp(8px, 1.5vw, 12px);
-    }
-    
-    .dropdown-item {
-        font-size: clamp(8px, 1.5vw, 10px);
-        padding: 5px 6px;
-    }
-    
-    #refresh-button {
-        font-size: clamp(10px, 1.5vw, 14px);
-        padding: 8px 16px;
-    }
-}
-/* Classes pour les couleurs de fond des cellules */
-.text-red {
-    background-color: #ff9999; /* Une couleur rouge claire */
+.pause-btn:hover {
+    background-color: #fff3cd;
+    border-color: #ffc107;
 }
 
-.text-green {
-    background-color: #99ff99; /* Une couleur verte claire */
+.fin-btn:hover {
+    background-color: #d4edda;
+    border-color: #28a745;
+}
+
+/* Ajustement pour le contenu de A1 */
+#a1 {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    padding-bottom: 40px; /* Espace pour les boutons */
+}
+
+/* Style pour les cases facultatives (vert) */
+.optional-cell {
+    background-color: #e8f5e8 !important;
+    border-color: #a8d8a8 !important;
+}
+
+.optional-cell .cell-content {
+    color: var(--success-color); /* Texte en vert foncé */
+    font-weight: 600; /* Plus de gras */
+    font-style: normal; /* Pas d'italique */
+}
+
+.optional-cell:hover {
+    background-color: #d4edda !important;
+    border-color: #28a745 !important;
 }
