@@ -1,3 +1,5 @@
+/* style.css */
+
 :root {
     --primary-color: #0056b3;
     --primary-hover-color: #00448a;
@@ -451,4 +453,40 @@ h1 {
 .optional-cell:hover {
     background-color: #d4edda !important;
     border-color: #28a745 !important;
+}
+
+/* Styles pour le tableau de résultats */
+#task-results-table-container {
+    margin-top: 20px;
+    width: 100%;
+    overflow-x: auto; /* Permet le défilement horizontal si le tableau est large */
+}
+
+#task-results-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 10px;
+    margin-top: 15px;
+}
+
+#task-results-table th,
+#task-results-table td {
+    border: 1px solid #ddd;
+    padding: 4px;
+    text-align: left;
+}
+
+#task-results-table thead th {
+    background-color: #e9ecef;
+    position: sticky; /* Rend les en-têtes fixes lors du défilement vertical */
+    top: 0;
+    z-index: 1;
+}
+
+#task-results-table tbody tr {
+    border-bottom: 1px solid #ddd;
+}
+
+#task-results-table tbody tr:nth-child(even) {
+    background-color: #f9f9f9; /* Ligne de fond alternée pour une meilleure lisibilité */
 }
