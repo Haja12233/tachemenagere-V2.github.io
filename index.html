@@ -11,11 +11,12 @@
 
     <div class="container">
         <h1>Gestion des Tâches</h1>
+
+        <!-- GRILLE 4×4 existante -->
         <div class="grid">
             <div class="cell" id="a1" data-initial-text="Local">
                 <span class="cell-content placeholder">Local</span>
                 <div class="dropdown-menu"></div>
-                <!-- Boutons FIN et PAUSE ajoutés -->
                 <div class="action-buttons">
                     <button class="pause-btn">PAUSE</button>
                     <button class="fin-btn">FIN</button>
@@ -27,7 +28,7 @@
                 <span class="cell-content placeholder">Utilisateur</span>
                 <div class="dropdown-menu"></div>
             </div>
-            <!-- A2 transformé en affichage d'heure -->
+
             <div class="cell" id="a2" data-initial-text="Début Tâche">
                 <span class="cell-content placeholder">Début</span>
             </div>
@@ -36,16 +37,16 @@
                 <span class="cell-content placeholder">Contrôle Rat</span>
             </div>
             <div class="cell empty-cell" id="d2"></div>
-            <!-- A3 transformé en affichage d'heure -->
+
             <div class="cell" id="a3" data-initial-text="Fin Tâche">
                 <span class="cell-content placeholder">Fin</span>
             </div>
             <div class="cell empty-cell" id="b3"></div>
-            <!-- C3 modifié pour fonctionner au clic -->
             <div class="cell" id="c3" data-initial-text="Contrôle Xylophage">
                 <span class="cell-content placeholder">Contrôle Xylophage</span>
             </div>
             <div class="cell empty-cell" id="d3"></div>
+
             <div class="cell optional-cell" id="a4" data-initial-text="A4">
                 <span class="cell-content placeholder">A4</span>
                 <div class="dropdown-menu"></div>
@@ -63,7 +64,11 @@
                 <div class="dropdown-menu"></div>
             </div>
         </div>
+
         <button id="refresh-button">🔄 Actualiser toutes les cases</button>
+
+        <!-- 〓〓〓  TABLEAU DES RESULTATS  〓〓〓 -->
+        <div id="task-results-table-container"></div>
     </div>
 
     <script src="index.js"></script>
