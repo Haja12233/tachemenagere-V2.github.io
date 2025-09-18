@@ -1,3 +1,4 @@
+// index.js (mis à jour avec les nouvelles fonctionnalités)
 document.addEventListener('DOMContentLoaded', function() {
     // Configuration et variables globales
     const initialUsers = ['Anniva', 'Tina'];
@@ -7,7 +8,7 @@ document.addEventListener('DOMContentLoaded', function() {
     let activeMenu = null;
     const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz7NrE1iwl4vthz2Sxx3DIOoRXrSkq8nolvjefXo-w-KdBaP948MGa19hRanVgR5EQK/exec';
     // Variables pour le suivi des tâches
-    let taskHistory = [];
+    let taskHistory = []; // Pour Google Sheets
     let currentTaskIndex = 0;
     let selectedLocale = null;
     let startTime = null;
@@ -17,9 +18,24 @@ document.addEventListener('DOMContentLoaded', function() {
     let taskEndTime = null;
     let isTaskPaused = false;
     let previousTaskEndTime = null; // Pour stocker l'heure de fin de la tâche précédente
+    // --- NOUVEAU : Stockage pour les résultats à afficher dans le tableau ---
+    let displayedTaskResults = [];
+
+    // --- NOUVEAU : Fonction pour afficher la date courante ---
+    function updateCurrentDate() {
+        const dateElement = document.getElementById('current-date-display');
+        if (dateElement) {
+            const now = new Date();
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            // Utiliser la locale française pour le formatage
+            dateElement.textContent = now.toLocaleDateString('fr-FR', options);
+        }
+    }
+
     // Fonctions de gestion des données
     function saveResults() {
         const results = {};
+        // Ajout de toutes les cellules nécessaires à la sauvegarde (seulement les utilisées)
         const cellsToSave = ['a1', 'a2', 'a3', 'a4', 'b4', 'c2', 'c3', 'c4', 'd1', 'd4'];
         cellsToSave.forEach(id => {
             const cell = document.getElementById(id);
@@ -136,124 +152,252 @@ document.addEventListener('DOMContentLoaded', function() {
         notification.classList.add('show');
         setTimeout(() => {
             notification.classList.remove('show');
-            if (isCompletion) resetAll();
+            if (isCompletion) resetAll(); // Cela va réinitialiser tout, y compris le tableau
         }, 2000);
     }
     function updateResults() {
         saveResults();
     }
-    // Fonctions de gestion de l'historique
+    // --- MODIFIE : Fonctions de gestion de l'historique (suppression de displayTaskHistory et displayCurrentResults) ---
     function saveTaskHistory() {
+        // Sauvegarde dans localStorage si nécessaire pour persistance, mais pas d'affichage
         localStorage.setItem('taskHistory', JSON.stringify(taskHistory));
         localStorage.setItem('currentTaskIndex', currentTaskIndex.toString());
+        // Sauvegarder aussi les résultats à afficher
+        localStorage.setItem('displayedTaskResults', JSON.stringify(displayedTaskResults));
     }
     function loadTaskHistory() {
+         // Charger depuis localStorage
         const savedHistory = localStorage.getItem('taskHistory');
         const savedIndex = localStorage.getItem('currentTaskIndex');
+        const savedDisplayedResults = localStorage.getItem('displayedTaskResults');
         if (savedHistory) {
             taskHistory = JSON.parse(savedHistory);
         }
         if (savedIndex) {
             currentTaskIndex = parseInt(savedIndex);
         }
-    }
-    function addToTaskHistory(taskData) {
-        taskHistory.push(taskData);
-        currentTaskIndex++;
-        saveTaskHistory();
-        displayTaskHistory();
-    }
-    function displayTaskHistory() {
-        let historyContainer = document.getElementById('task-history');
-        if (!historyContainer) {
-            historyContainer = document.createElement('div');
-            historyContainer.id = 'task-history';
-            historyContainer.style.cssText = 'margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px;';
-            document.querySelector('.container').appendChild(historyContainer);
+        if (savedDisplayedResults) {
+            displayedTaskResults = JSON.parse(savedDisplayedResults);
+            renderTaskResultsTable(); // Afficher le tableau au chargement
         }
-        let historyHTML = '<h3>Historique des Tâches</h3><table style="width: 100%; border-collapse: collapse; font-size: 12px;">';
-        historyHTML += '<tr style="background-color: #e9ecef;"><th>Pavillon</th><th>Début</th><th>Fin</th><th>Utilisateur</th></tr>';
-        taskHistory.forEach((task, index) => {
-            historyHTML += `<tr style="border-bottom: 1px solid #ddd;">
-                <td>${task.locale || ''}</td>
-                <td>${task.startTime || ''}</td>
-                <td>${task.endTime || ''}</td>
-                <td>${task.user || ''}</td>
-            </tr>`;
-        });
-        historyHTML += '</table>';
-        historyContainer.innerHTML = historyHTML;
     }
-    function displayCurrentResults() {
-        let resultsContainer = document.getElementById('current-results');
-        if (!resultsContainer) {
-            resultsContainer = document.createElement('div');
-            resultsContainer.id = 'current-results';
-            resultsContainer.style.cssText = 'margin-top: 20px; padding: 15px; background: #fff3cd; border-radius: 8px; border: 1px solid #ffeaa7;';
-            const container = document.querySelector('.container');
-            const historyContainer = document.getElementById('task-history');
-            if (historyContainer) {
-                container.insertBefore(resultsContainer, historyContainer);
-            } else {
-                container.appendChild(resultsContainer);
+    // --- NOUVEAU : Fonction pour vérifier si C2 et C3 sont "complétés" pour la locale actuelle ---
+    function isC2AndC3CompletedForCurrentLocale() {
+        if (!selectedLocale) return true; // Si aucune locale sélectionnée, considérer comme OK
+
+        const c2Cell = document.getElementById('c2');
+        const c3Cell = document.getElementById('c3');
+
+        let isC2Done = false;
+        let isC3Done = false;
+
+        if (c2Cell) {
+            const c2Content = c2Cell.querySelector('.cell-content');
+            const c2LocationList = c2Cell.querySelector('.location-list');
+            // C2 est considéré comme fait si la liste est condensée (donc n'existe plus) OU si le contenu est 'R'
+            // OU si le dataset.locked est true (signifie qu'on a chargé et peut-être cliqué)
+            // OU si selectedLocale est défini et que C2 n'est plus dans son état initial.
+            if (!c2LocationList && c2Content) {
+                 // La liste a été condensée ou C2 a été défini à 'R'
+                 isC2Done = true;
+            } else if (c2Content && c2Content.textContent.trim() === 'R') {
+                 // Cas spécifique où C2 est directement 'R'
+                 isC2Done = true;
+            } else if (c2Cell.dataset.locked === "true") {
+                 // La cellule a été chargée et potentiellement modifiée
+                 isC2Done = true;
             }
-        }
-        const cellValues = {};
-        const cellIds = ['a1', 'a2', 'a3', 'a4', 'b1', 'b2', 'b3', 'b4', 'c1', 'c2', 'c3', 'c4', 'd1', 'd2', 'd3', 'd4'];
-        cellIds.forEach(id => {
-            const cell = document.getElementById(id);
-            if (!cell) return;
-            let value = '';
-            let color = '';
-            if (id === 'c2') {
-                const locationList = cell.querySelector('.location-list');
-                const contentSpan = cell.querySelector('.cell-content');
-                if (locationList) {
-                    const locations = Array.from(locationList.querySelectorAll('.location-item')).map(item => {
-                        let colorText = '';
-                        if (item.classList.contains('text-green')) colorText = ' (Vert)';
-                        else if (item.classList.contains('text-red')) colorText = ' (Rouge)';
-                        return item.textContent.trim() + colorText;
-                    });
-                    value = locations.join(', ');
-                } else if (contentSpan) {
-                    value = contentSpan.textContent.trim();
-                }
-            } else {
-                const contentSpan = cell.querySelector('.cell-content');
-                const contentButton = cell.querySelector('button');
-                if (contentSpan) {
-                    value = contentSpan.textContent.trim();
-                } else if (contentButton) {
-                    value = contentButton.textContent.trim();
-                }
-                if (cell.classList.contains('text-green')) color = ' (Vert)';
-                else if (cell.classList.contains('text-red')) color = ' (Rouge)';
-            }
-            const initialText = cell.getAttribute('data-initial-text') || '';
-            if (value && value !== initialText && value !== 'Sélectionnez une locale') {
-                cellValues[id.toUpperCase()] = value + color;
-            }
-        });
-        let resultsHTML = '<h3>Résultats Actuels</h3>';
-        if (Object.keys(cellValues).length > 0) {
-            resultsHTML += '<table style="width: 100%; border-collapse: collapse; font-size: 12px;">';
-            resultsHTML += '<tr style="background-color: #ffeaa7;"><th>Cellule</th><th>Valeur</th></tr>';
-            Object.keys(cellValues).forEach(cellId => {
-                resultsHTML += `<tr style="border-bottom: 1px solid #ddd;">
-                    <td><strong>${cellId}</strong></td>
-                    <td>${cellValues[cellId] || ''}</td>
-                </tr>`;
-            });
-            resultsHTML += '</table>';
+            // Sinon, si c2LocationList existe, C2 n'est pas encore terminé
         } else {
-            resultsHTML += '<p style="color: #856404;">Aucune donnée à afficher pour le moment.</p>';
+            isC2Done = true; // Si la cellule n'existe pas, considérer comme OK (théoriquement impossible ici)
         }
-        resultsContainer.innerHTML = resultsHTML;
+
+        if (c3Cell) {
+            const c3Content = c3Cell.querySelector('.cell-content');
+            // C3 est considéré comme fait si le contenu est 'X'
+            if (c3Content && c3Content.textContent.trim() === 'X') {
+                isC3Done = true;
+            }
+        } else {
+             isC3Done = true; // Si la cellule n'existe pas, considérer comme OK (théoriquement impossible ici)
+        }
+
+        return isC2Done && isC3Done;
+    }
+
+    // --- NOUVEAU : Fonction pour ajouter un résultat au tableau d'affichage ---
+    function addToDisplayedResults(taskData) {
+        // Récupérer les valeurs des cellules actuelles au moment de la finalisation
+        const pavillon = taskData.locale || '';
+        const debut = taskData.startTimeFormatted || ''; // Utiliser le format hh:mm
+        const fin = taskData.endTimeFormatted || ''; // Utiliser le format hh:mm
+        const utilisateur = taskData.user || '';
+
+        // --- NOUVEAU : Vérifier les doublons de pavillon ---
+        const isDuplicate = displayedTaskResults.some(result => result.pavillon === pavillon);
+        if (isDuplicate) {
+            alert(`Le pavillon ${pavillon} a déjà été enregistré. Veuillez choisir un pavillon différent.`);
+            return; // Ne pas ajouter si c'est un doublon
+        }
+
+        // Récupérer les valeurs des cellules optionnelles AU MOMENT DE L'AJOUT
+        const getCellValue = (id) => {
+            const cell = document.getElementById(id);
+            if (!cell) return '';
+            const contentSpan = cell.querySelector('.cell-content');
+            const contentButton = cell.querySelector('button');
+            if (contentSpan) {
+                return contentSpan.textContent.trim();
+            } else if (contentButton) {
+                return contentButton.textContent.trim();
+            }
+            return '';
+        };
+        const a4 = getCellValue('a4');
+        // const b1 = getCellValue('b1'); // Non utilisé
+        // const b2 = getCellValue('b2'); // Non utilisé
+        // const b3 = getCellValue('b3'); // Non utilisé
+        const b4 = getCellValue('b4');
+        // const c1 = getCellValue('c1'); // Non utilisé
+        const c2Raw = getCellValue('c2');
+        let c2 = '';
+        // Extraire le nombre de 'R' si c'est un format condensé (ex: '2R')
+        if (c2Raw.includes('R')) {
+            c2 = c2Raw;
+        } else {
+            // Si c'est une liste, compter les R rouges
+             const c2Cell = document.getElementById('c2');
+             const locationList = c2Cell.querySelector('.location-list');
+             if (locationList) {
+                 const redCount = Array.from(locationList.querySelectorAll('.location-item.text-red')).length;
+                 if (redCount > 0) {
+                     c2 = `${redCount}R`;
+                 } else {
+                     c2 = 'xR'; // ou un autre indicateur pour "ok"
+                 }
+             } else {
+                 c2 = c2Raw;
+             }
+        }
+        // --- MODIFIE : Capturer la valeur 'X' et la couleur de la cellule C3 ---
+        const c3Cell = document.getElementById('c3');
+        const c3ContentSpan = c3Cell.querySelector('.cell-content');
+        let c3Value = '';
+        let c3ColorClass = ''; // Pour stocker la classe de couleur
+        if (c3ContentSpan && c3ContentSpan.textContent.trim() === 'X') {
+            c3Value = 'X';
+            // Déterminer la couleur basée sur les classes de la cellule
+            if (c3Cell.classList.contains('text-green')) {
+                c3ColorClass = 'text-green';
+            } else if (c3Cell.classList.contains('text-red')) {
+                c3ColorClass = 'text-red';
+            }
+            // Si X est présent mais aucune couleur spécifique n'est définie, c3ColorClass restera vide
+        } else {
+            // Si C3 n'a pas été cliqué ou a une autre valeur
+            c3Value = c3ContentSpan ? c3ContentSpan.textContent.trim() : '';
+        }
+        const c4 = getCellValue('c4');
+        // const d2 = getCellValue('d2'); // Non utilisé
+        // const d3 = getCellValue('d3'); // Non utilisé
+        const d4 = getCellValue('d4');
+        // Créer un objet pour la ligne du tableau
+        const tableRowData = {
+            pavillon, debut, fin, utilisateur,
+            a4,
+            // b1, b2, b3, // Non utilisé
+            b4,
+            // c1, // Non utilisé
+            c2,
+            c3: { value: c3Value, colorClass: c3ColorClass }, // Stocker un objet avec valeur et couleur
+            c4,
+            // d2, d3, // Non utilisé
+            d4
+        };
+        // Ajouter à la liste des résultats affichés
+        displayedTaskResults.push(tableRowData);
+        // Sauvegarder et afficher
+        saveTaskHistory(); // Met à jour displayedTaskResults dans localStorage
+        renderTaskResultsTable(); // --- CLÉ : Afficher/mettre à jour le tableau ---
+    }
+    // --- NOUVEAU : Fonction pour afficher/mettre à jour le tableau HTML ---
+    function renderTaskResultsTable() {
+        const container = document.getElementById('task-results-table-container');
+        if (!container) return;
+        if (displayedTaskResults.length === 0) {
+            container.innerHTML = '<p style="margin-top: 15px; text-align: center;">Aucun résultat à afficher pour le moment.</p>';
+            return;
+        }
+        let tableHTML = `
+        <table id="task-results-table" style="width: 100%; border-collapse: collapse; font-size: 10px; margin-top: 15px;">
+            <thead>
+                <tr style="background-color: #e9ecef;">
+                    <th style="border: 1px solid #ddd; padding: 4px;">Pavillon</th>
+                    <th style="border: 1px solid #ddd; padding: 4px;">Début</th>
+                    <th style="border: 1px solid #ddd; padding: 4px;">Fin</th>
+                    <th style="border: 1px solid #ddd; padding: 4px;">Utilisateur</th>
+                    <th style="border: 1px solid #ddd; padding: 4px;">A4</th>
+                    <!-- <th style="border: 1px solid #ddd; padding: 4px;">B1</th> --> <!-- Supprimé -->
+                    <!-- <th style="border: 1px solid #ddd; padding: 4px;">B2</th> --> <!-- Supprimé -->
+                    <!-- <th style="border: 1px solid #ddd; padding: 4px;">B3</th> --> <!-- Supprimé -->
+                    <th style="border: 1px solid #ddd; padding: 4px;">B4</th>
+                    <!-- <th style="border: 1px solid #ddd; padding: 4px;">C1</th> --> <!-- Supprimé -->
+                    <th style="border: 1px solid #ddd; padding: 4px;">C2</th>
+                    <th style="border: 1px solid #ddd; padding: 4px;">C3</th>
+                    <th style="border: 1px solid #ddd; padding: 4px;">C4</th>
+                    <!-- <th style="border: 1px solid #ddd; padding: 4px;">D2</th> --> <!-- Supprimé -->
+                    <!-- <th style="border: 1px solid #ddd; padding: 4px;">D3</th> --> <!-- Supprimé -->
+                    <th style="border: 1px solid #ddd; padding: 4px;">D4</th>
+                </tr>
+            </thead>
+            <tbody>
+        `;
+        displayedTaskResults.forEach((row, index) => {
+            tableHTML += `<tr style="border-bottom: 1px solid #ddd;">`;
+            tableHTML += `<td style="border: 1px solid #ddd; padding: 4px;">${row.pavillon || ''}</td>`;
+            tableHTML += `<td style="border: 1px solid #ddd; padding: 4px;">${row.debut || ''}</td>`;
+            tableHTML += `<td style="border: 1px solid #ddd; padding: 4px;">${row.fin || ''}</td>`;
+            tableHTML += `<td style="border: 1px solid #ddd; padding: 4px;">${row.utilisateur || ''}</td>`;
+            tableHTML += `<td style="border: 1px solid #ddd; padding: 4px;">${row.a4 || ''}</td>`;
+            // tableHTML += `<td style="border: 1px solid #ddd; padding: 4px;">${row.b1 || ''}</td>`; <!-- Supprimé -->
+            // tableHTML += `<td style="border: 1px solid #ddd; padding: 4px;">${row.b2 || ''}</td>`; <!-- Supprimé -->
+            // tableHTML += `<td style="border: 1px solid #ddd; padding: 4px;">${row.b3 || ''}</td>`; <!-- Supprimé -->
+            tableHTML += `<td style="border: 1px solid #ddd; padding: 4px;">${row.b4 || ''}</td>`;
+            // tableHTML += `<td style="border: 1px solid #ddd; padding: 4px;">${row.c1 || ''}</td>`; <!-- Supprimé -->
+            tableHTML += `<td style="border: 1px solid #ddd; padding: 4px;">${row.c2 || ''}</td>`;
+            // --- MODIFIE : Afficher C3 avec la valeur 'X' et appliquer la couleur ---
+            let c3Display = '';
+            if (typeof row.c3 === 'object' && row.c3.value === 'X') {
+                // Appliquer le style en ligne basé sur la classe de couleur capturée
+                let c3Style = '';
+                if (row.c3.colorClass === 'text-green') {
+                    c3Style = 'color: #28a745; font-weight: bold;'; // Vert Bootstrap
+                } else if (row.c3.colorClass === 'text-red') {
+                    c3Style = 'color: #dc3545; font-weight: bold;'; // Rouge Bootstrap
+                }
+                c3Display = `<span style="${c3Style}">${row.c3.value}</span>`;
+            } else {
+                 // Pour la rétrocompatibilité ou d'autres valeurs
+                 c3Display = typeof row.c3 === 'object' ? row.c3.value : row.c3 || '';
+            }
+            tableHTML += `<td style="border: 1px solid #ddd; padding: 4px;">${c3Display}</td>`;
+            tableHTML += `<td style="border: 1px solid #ddd; padding: 4px;">${row.c4 || ''}</td>`;
+            // tableHTML += `<td style="border: 1px solid #ddd; padding: 4px;">${row.d2 || ''}</td>`; <!-- Supprimé -->
+            // tableHTML += `<td style="border: 1px solid #ddd; padding: 4px;">${row.d3 || ''}</td>`; <!-- Supprimé -->
+            tableHTML += `<td style="border: 1px solid #ddd; padding: 4px;">${row.d4 || ''}</td>`;
+            tableHTML += `</tr>`;
+        });
+        tableHTML += `
+            </tbody>
+        </table>
+        `;
+        container.innerHTML = tableHTML;
     }
     // Fonctions de gestion des cellules
     function resetAllExceptA1D1A3() {
-        const cellsToReset = ['a2', 'a4', 'b1', 'b2', 'b3', 'b4', 'c1', 'c2', 'c3', 'c4', 'd2', 'd3', 'd4'];
+        // const cellsToReset = ['a2', 'a4', 'b1', 'b2', 'b3', 'b4', 'c1', 'c2', 'c3', 'c4', 'd2', 'd3', 'd4']; // Ancien
+        const cellsToReset = ['a2', 'a4', 'b4', 'c2', 'c3', 'c4', 'd4']; // Cases utilisées uniquement
         cellsToReset.forEach(id => {
             const cell = document.getElementById(id);
             if (!cell) return;
@@ -273,10 +417,10 @@ document.addEventListener('DOMContentLoaded', function() {
         });
         localStorage.removeItem('taskResults');
         updateResults();
-        displayCurrentResults();
     }
     function manualRefresh() {
-        const cellsToReset = ['a1', 'a2', 'a4', 'b4', 'c2', 'c3', 'c4', 'd4'];
+       // const cellsToReset = ['a1', 'a2', 'a4', 'b1', 'b2', 'b3', 'b4', 'c1', 'c2', 'c3', 'c4', 'd1', 'd2', 'd3', 'd4']; // Ancien
+       const cellsToReset = ['a1', 'a2', 'a4', 'b4', 'c2', 'c3', 'c4', 'd1', 'd4']; // Cases utilisées uniquement
         cellsToReset.forEach(id => {
             const cell = document.getElementById(id);
             if (!cell) return;
@@ -300,7 +444,6 @@ document.addEventListener('DOMContentLoaded', function() {
         localStorage.removeItem('defaultUserD1');
         updateA1Menu();
         updateD1MenuWithDefault();
-        displayCurrentResults();
         showNotification('Toutes les cases ont été réinitialisées ! 🔄');
     }
     function checkCompletion() {
@@ -312,7 +455,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 const locationList = cell.querySelector('.location-list');
                 if (!contentSpan && !locationList) return false;
                 if (contentSpan && (contentSpan.textContent.trim().includes('R'))) {
-                    return true;
+                    return true; // Permet de terminer la tâche même si C2 est condensé
                 }
                 if (locationList) {
                     const locations = Array.from(locationList.querySelectorAll('.location-item')).map(item => item.textContent.trim());
@@ -326,15 +469,16 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (!currentValue || currentValue === initialText) return false;
             }
         }
-        showNotification('Tâche complète ! 🎉', true);
+        // Ne pas appeler showNotification ici, c'est handleFinTask qui le fait
+        // showNotification('Tâche complète ! 🎉', true);
         return true;
     }
     // Fonctions pour la cellule D1 (Utilisateur)
     function saveDefaultUser() {
         if (defaultUser) {
-            localStorage.setItem('defaultUserD1', JSON.stringify({ 
-                user: defaultUser, 
-                expiry: defaultUserExpiry 
+            localStorage.setItem('defaultUserD1', JSON.stringify({
+                user: defaultUser,
+                expiry: defaultUserExpiry
             }));
         }
     }
@@ -367,7 +511,6 @@ document.addEventListener('DOMContentLoaded', function() {
         saveDefaultUser();
         updateD1MenuWithDefault();
         showNotification(`Utilisateur "${defaultUser}" défini par défaut pour 8h !`);
-        displayCurrentResults();
     }
     function updateD1MenuWithDefault() {
         const menu = document.querySelector('#d1 .dropdown-menu');
@@ -484,7 +627,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
                 c2Cell.dataset.locked = "false";
                 updateResults();
-                displayCurrentResults();
                 checkCompletion();
             })
             .catch(error => {
@@ -509,7 +651,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
                 c2Cell.dataset.locked = "false";
                 updateResults();
-                displayCurrentResults();
             });
     }
     // Fonction pour C3 (similaire à C2 mais avec des contrôles différents)
@@ -526,14 +667,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 c3Cell.innerHTML = `<span class="cell-content">Contrôle standard</span>`;
             }
             updateResults();
-            displayCurrentResults();
         }, 500);
     }
     function condenseC2List() {
         const c2Cell = document.getElementById('c2');
         const locationItems = Array.from(c2Cell.querySelectorAll('.location-item'));
         if (locationItems.length === 0) return;
-        const redCount = locationItems.filter(item => 
+        const redCount = locationItems.filter(item =>
             item.classList.contains('text-red')
         ).length;
         c2Cell.classList.remove('text-green', 'text-red');
@@ -546,7 +686,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         c2Cell.dataset.locked = "true";
         updateResults();
-        displayCurrentResults();
         checkCompletion();
     }
     function handleListAdd(cell) {
@@ -563,7 +702,6 @@ document.addEventListener('DOMContentLoaded', function() {
             newLocationItem.dataset.colorState = '0';
             container.appendChild(newLocationItem);
             updateResults();
-            displayCurrentResults();
         }
     }
     function handleLocationItemClick(locationItem) {
@@ -578,7 +716,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         updateC2BackgroundColor();
         updateResults();
-        displayCurrentResults();
         checkCompletion();
     }
     function updateC2BackgroundColor() {
@@ -594,7 +731,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 c2Cell.classList.add('text-green');
             }
         }
-        displayCurrentResults();
     }
     // Nouvelle fonction pour gérer le clic sur C3
     function handleC3Click(event) {
@@ -602,16 +738,15 @@ document.addEventListener('DOMContentLoaded', function() {
         const content = cell.querySelector('.cell-content');
         cell.classList.remove('text-green', 'text-red');
         content.textContent = 'X';
-        if (event.detail === 2) { 
+        if (event.detail === 2) {
             cell.classList.add('text-red');
-        } else if (event.detail === 1) { 
+        } else if (event.detail === 1) {
             cell.classList.add('text-green');
         } else {
             content.textContent = 'X';
         }
         content.classList.remove('placeholder');
         updateResults();
-        displayCurrentResults();
         checkCompletion();
     }
     // Fonctions de gestion du temps
@@ -640,15 +775,11 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         if (taskStartTime) {
             taskEndTime = new Date();
-            const duration = (taskEndTime - taskStartTime) / 1000;
-            const user = document.getElementById('d1').querySelector('.cell-content').textContent;
-            // const formattedStartTime = formatTimeHHMM(taskStartTime); // hhmm - Ancien format pour A2
-            // const formattedEndTime = formatTimeHHMMColon(taskEndTime); // hh:mm - Format pour A3
-            // Utiliser le format hh:mm pour les deux lors de la fin explicite
-            const formattedStartTime = formatTimeHHMMColon(taskStartTime); // hh:mm - Nouveau format pour A2 aussi
-            const formattedEndTime = formatTimeHHMMColon(taskEndTime); // hh:mm - Format pour A3
             // Stocker l'heure de fin pour la prochaine tâche
             previousTaskEndTime = taskEndTime;
+            // Utiliser le format hh:mm pour les deux lors de la fin explicite
+            const formattedStartTime = formatTimeHHMMColon(taskStartTime); // hh:mm
+            const formattedEndTime = formatTimeHHMMColon(taskEndTime); // hh:mm
             // Mettre à jour A2 avec l'heure de début au format hh:mm
             const startTimeCell = document.getElementById('a2');
             startTimeCell.querySelector('.cell-content').textContent = formattedStartTime;
@@ -657,16 +788,43 @@ document.addEventListener('DOMContentLoaded', function() {
             const endTimeCell = document.getElementById('a3');
             endTimeCell.querySelector('.cell-content').textContent = formattedEndTime;
             endTimeCell.querySelector('.cell-content').classList.remove('placeholder');
+            const user = document.getElementById('d1').querySelector('.cell-content').textContent;
+            // --- MODIFIE : Données pour addToTaskHistory et addToDisplayedResults ---
             const taskData = {
                 locale: selectedLocale,
                 user: user,
                 startTime: formatTime(taskStartTime), // Format complet pour Google Sheets
                 endTime: formatTime(taskEndTime), // Format complet pour Google Sheets
-                duration: duration
+                startTimeFormatted: formattedStartTime, // Format hh:mm pour affichage
+                endTimeFormatted: formattedEndTime, // Format hh:mm pour affichage
+                duration: (taskEndTime - taskStartTime) / 1000
             };
-            addToTaskHistory(taskData);
+            // Ajouter à l'historique (envoi Google Sheets) et à l'affichage
+            addToTaskHistory(taskData); // Cela appellera addToDisplayedResults et renderTaskResultsTable
             sendToGoogleSheet(taskData);
-            showNotification(`Tâche pour ${selectedLocale} terminée ! 🎉`, true);
+            showNotification(`Tâche pour ${selectedLocale} terminée ! 🎉`, false); // Ne pas réinitialiser tout de suite
+            // Optionnel : Réinitialiser automatiquement après un certain temps ?
+            // setTimeout(resetAll, 3000); // Réinitialise après 3 secondes
+
+            // Réinitialiser les variables de tâche pour la prochaine
+            taskStartTime = null;
+            taskEndTime = null;
+            selectedLocale = null;
+            const a1Cell = document.getElementById('a1');
+            const a1Content = a1Cell.querySelector('.cell-content');
+            const initialA1Text = a1Cell.getAttribute('data-initial-text');
+            a1Content.textContent = initialA1Text;
+            a1Content.classList.add('placeholder');
+            a1Cell.classList.remove('text-green', 'text-red');
+
+            const finBtn = document.querySelector('.fin-btn');
+            const pauseBtn = document.querySelector('.pause-btn');
+            if (finBtn) finBtn.style.display = 'none';
+            if (pauseBtn) pauseBtn.style.display = 'none';
+
+            // Réinitialiser les cellules liées à la tâche (sauf A1, D1, A3)
+            resetAllExceptA1D1A3();
+
         } else {
             alert('La tâche n\'a pas été démarrée.');
         }
@@ -730,7 +888,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         updateA1Menu();
         updateD1MenuWithDefault();
-        displayCurrentResults();
         const finBtn = document.querySelector('.fin-btn');
         const pauseBtn = document.querySelector('.pause-btn');
         if (finBtn) finBtn.style.display = 'none';
@@ -745,6 +902,10 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             cell.classList.remove('text-green', 'text-red');
         });
+        // --- NOUVEAU : Réinitialiser l'affichage du tableau ---
+        displayedTaskResults = [];
+        localStorage.removeItem('displayedTaskResults');
+        renderTaskResultsTable(); // Met à jour l'affichage pour le vider
     }
     // Fonction pour envoyer les données à Google Sheets
     function sendToGoogleSheet(data) {
@@ -766,7 +927,8 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     // Fonction pour initialiser les dropdown des cases facultatives avec options fixes
     function initializeOptionalCellMenus() {
-        const optionalCells = ['a4', 'b4', 'c4', 'd4'];
+        // const optionalCells = ['a4', 'b1', 'b2', 'b3', 'b4', 'c1', 'c4', 'd2', 'd3', 'd4']; // Ancien
+        const optionalCells = ['a4', 'b4', 'c4', 'd4']; // Cases optionnelles utilisées uniquement
         const fixedOptions = ['Vide', '1', '2', '3'];
         optionalCells.forEach(cellId => {
             const cell = document.getElementById(cellId);
@@ -780,11 +942,72 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
-    // Gérer les clics sur les cellules
+    // --- NOUVEAU : Fonction pour gérer le clic sur les cellules optionnelles ---
+    function handleOptionalCellClick(cell) {
+        const cellId = cell.id;
+        const dropdownMenu = cell.querySelector('.dropdown-menu');
+        if (dropdownMenu) {
+            if (activeMenu && activeMenu !== dropdownMenu) {
+                activeMenu.classList.remove('show');
+            }
+            dropdownMenu.classList.toggle('show');
+            activeMenu = dropdownMenu.classList.contains('show') ? dropdownMenu : null;
+        }
+    }
+    // --- NOUVEAU : Fonction pour gérer la sélection d'un élément dans le menu des cellules optionnelles ---
+    function handleOptionalCellItemClick(item) {
+        const cell = item.closest('.cell');
+        const cellId = cell.id;
+        const content = cell.querySelector('.cell-content');
+        const selectedText = item.querySelector('.dropdown-item-content').textContent.trim();
+        content.textContent = selectedText;
+        content.classList.remove('placeholder');
+        cell.classList.remove('text-green', 'text-red'); // Retirer les couleurs si nécessaire
+        if (selectedText === '1') {
+            cell.classList.add('text-green');
+        } else if (selectedText === '2' || selectedText === '3') {
+            cell.classList.add('text-red');
+        }
+        item.closest('.dropdown-menu').classList.remove('show');
+        activeMenu = null;
+        updateResults();
+        checkCompletion(); // Vérifier si la tâche est complète après la sélection
+    }
+
+    // --- NOUVEAU : Gestionnaire d'événements pour empêcher le changement de pavillon ---
+    // Ce gestionnaire doit être placé AVANT les autres gestionnaires de clic sur .grid
+    document.querySelector('.grid').addEventListener('click', function(event) {
+        // Vérifier si le clic est sur un élément de menu déroulant à l'intérieur de A1
+        const itemInA1 = event.target.closest('#a1 .dropdown-item');
+        if (itemInA1) {
+            // Vérifier si une locale est déjà sélectionnée (donc une tâche est en cours)
+            if (selectedLocale) {
+                // Vérifier si C2 et C3 sont "terminés" pour la locale actuelle
+                if (!isC2AndC3CompletedForCurrentLocale()) {
+                    // Empêcher le changement de locale
+                    event.stopPropagation(); // Empêche la propagation à d'autres listeners
+                    event.preventDefault();  // Empêche l'action par défaut (sélection)
+                    alert("Veuillez terminer les contrôles C2 et C3 pour le pavillon actuel avant d'en choisir un nouveau.");
+                    return; // Sortir du gestionnaire
+                }
+                // Si isC2AndC3CompletedForCurrentLocale() est true, le code continue vers les autres gestionnaires
+            }
+            // Si selectedLocale est null, c'est le premier choix, donc on laisse passer
+        }
+        // Pour tous les autres clics, le comportement normal s'applique (géré par les listeners suivants)
+    }, true); // { capture: true } pour capturer l'événement pendant la phase de capture
+
+
+    // Gérer les clics sur les cellules (ancien gestionnaire 1)
     document.querySelector('.grid').addEventListener('click', function(event) {
         const cell = event.target.closest('.cell');
         if (!cell || cell.classList.contains('empty-cell') || cell.classList.contains('default-user-active')) return;
         const cellId = cell.id;
+        // --- NOUVEAU : Gestion spécifique pour les cellules optionnelles ---
+        if (cell.classList.contains('optional-cell')) {
+            handleOptionalCellClick(cell);
+            return; // Arrêter le traitement ici pour les cellules optionnelles
+        }
         const dropdownMenu = cell.querySelector('.dropdown-menu');
         if (activeMenu && activeMenu !== dropdownMenu) {
             activeMenu.classList.remove('show');
@@ -800,7 +1023,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 loadControlLocationsFromSheet(selectedLocale);
                 cell.dataset.locked = "false";
                 updateResults();
-                displayCurrentResults();
             }
         }
     });
@@ -816,12 +1038,18 @@ document.addEventListener('DOMContentLoaded', function() {
             activeMenu = null;
         }
     });
+    // Gérer les clics sur les cellules (ancien gestionnaire 2 pour les items de dropdown)
     document.querySelector('.grid').addEventListener('click', function(event) {
         const item = event.target.closest('.dropdown-item');
         if (!item) return;
         const cell = item.closest('.cell');
         const cellId = cell.id;
         const content = cell.querySelector('.cell-content');
+        // --- NOUVEAU : Gestion spécifique pour les cellules optionnelles ---
+        if (cell.classList.contains('optional-cell')) {
+            handleOptionalCellItemClick(item);
+            return; // Arrêter le traitement ici
+        }
         if (item.classList.contains('add-item')) {
             const newName = prompt("Veuillez entrer le nom du nouvel utilisateur :");
             if (newName && newName.trim()) {
@@ -839,76 +1067,111 @@ document.addEventListener('DOMContentLoaded', function() {
                 cell.classList.remove('default-user-active');
             }
             updateResults();
-            displayCurrentResults();
             checkCompletion();
         } else if (cellId === 'a1') {
-            // Workflow complet : D1 -> A1 -> A2 -> C2 -> C3
+            // --- NOUVEAU : Logique pour terminer automatiquement la tâche précédente ---
+            // Vérifier s'il y a une tâche en cours (débutée avec une locale précédente)
+            // Note: La vérification isC2AndC3CompletedForCurrentLocale est maintenant faite dans le gestionnaire de capture.
+            if (selectedLocale && taskStartTime) {
+                // --- Simuler la fin de la tâche précédente ---
+                const previousLocale = selectedLocale;
+                const previousUser = document.getElementById('d1').querySelector('.cell-content').textContent;
+                const previousStartTime = taskStartTime;
+                // Définir l'heure de fin comme "maintenant"
+                const previousEndTime = new Date();
+                // Formater les heures pour l'affichage dans le tableau
+                const formattedPreviousStartTime = formatTimeHHMMColon(previousStartTime);
+                const formattedPreviousEndTime = formatTimeHHMMColon(previousEndTime);
+
+                // --- Ajouter les données de la tâche précédente au tableau ---
+                // Créer l'objet taskData comme dans handleFinTask
+                const previousTaskData = {
+                    locale: previousLocale,
+                    user: previousUser,
+                    startTime: formatTime(previousStartTime), // Format complet si envoyé à Google Sheets
+                    endTime: formatTime(previousEndTime),     // Format complet si envoyé à Google Sheets
+                    startTimeFormatted: formattedPreviousStartTime, // Format hh:mm pour affichage
+                    endTimeFormatted: formattedPreviousEndTime,     // Format hh:mm pour affichage
+                    duration: (previousEndTime - previousStartTime) / 1000 // Durée en secondes
+                };
+
+                // Ajouter au tableau d'affichage et sauvegarder
+                // --- MODIFIE : Appel à addToDisplayedResults qui gère maintenant les doublons ---
+                addToDisplayedResults(previousTaskData); // addToDisplayedResults appelle saveTaskHistory et renderTaskResultsTable
+                // Optionnel : Envoyer à Google Sheets
+                // sendToGoogleSheet(previousTaskData);
+
+                // --- Réinitialiser les variables de la tâche précédente ---
+                // taskStartTime sera réinitialisé plus bas
+                // taskEndTime est temporaire, pas besoin de le garder
+                // selectedLocale sera mis à jour plus bas
+                // previousTaskEndTime est mis à jour ici
+                previousTaskEndTime = previousEndTime;
+
+                // --- Réinitialiser les cellules liées à la tâche précédente (sauf A1, D1, A3) ---
+                resetAllExceptA1D1A3();
+
+                // Optionnel : Afficher une notification ou un message
+                // showNotification(`Tâche pour ${previousLocale} terminée automatiquement !`);
+            }
+            // --- Fin de la terminaison automatique ---
+
+            // --- Démarrer la nouvelle tâche ---
             const newLocale = item.querySelector('.dropdown-item-content').textContent.trim();
 
-            // --- Logique modifiée pour A3 (heure fin tâche précédente) et A2 (heure début nouvelle tâche) ---
-            // 1. Si une tâche était en cours/terminée, stocker son heure de fin
-            if (taskStartTime) {
-                 // Optionnel : Terminer automatiquement la tâche précédente ?
-                 // handleFinTask();
-                 // Ou simplement stocker l'heure de fin pour la prochaine tâche
-                 if (taskEndTime) {
-                      previousTaskEndTime = taskEndTime;
-                 } else if (taskStartTime) {
-                      // Si la tâche a commencé mais pas explicitement terminée, on considère la fin comme maintenant
-                      previousTaskEndTime = new Date(); // Ou garder taskEndTime = null pour ne pas afficher ?
-                 }
-            }
-
-            // 2. Mettre à jour la sélection de la nouvelle locale
+            // 1. Mettre à jour la sélection de la nouvelle locale
             selectedLocale = newLocale;
             content.textContent = selectedLocale;
             content.classList.remove('placeholder');
             updateResults();
 
-            // 3. A2 affiche l'heure de début de la NOUVELLE tâche (format hh:mm)
+            // 2. A2 affiche l'heure de début de la NOUVELLE tâche (format hh:mm)
             taskStartTime = new Date(); // Démarre le chrono pour la nouvelle tâche
             const startTimeCell = document.getElementById('a2');
             startTimeCell.querySelector('.cell-content').textContent = formatTimeHHMMColon(taskStartTime); // Utilise hh:mm
             startTimeCell.querySelector('.cell-content').classList.remove('placeholder');
 
-            // 4. A3 affiche l'heure de fin de la TÂCHE PRÉCÉDENTE (format hh:mm), si disponible
-            if (previousTaskEndTime) {
-                const endTimeCell = document.getElementById('a3');
-                endTimeCell.querySelector('.cell-content').textContent = formatTimeHHMMColon(previousTaskEndTime); // Utilise hh:mm
-                endTimeCell.querySelector('.cell-content').classList.remove('placeholder');
-            } else {
-                 // Optionnel : Réinitialiser A3 si aucune tâche précédente
-                 // const endTimeCell = document.getElementById('a3');
-                 // endTimeCell.querySelector('.cell-content').textContent = 'Fin';
-                 // endTimeCell.querySelector('.cell-content').classList.add('placeholder');
-            }
+            // 3. A3 affiche l'heure de fin de la TÂCHE PRÉCÉDENTE (format hh:mm), si disponible
+            // (Cette logique est maintenant gérée par la terminaison automatique ci-dessus)
+            // Si aucune tâche précédente, A3 reste comme il est (ex: "Fin" placeholder)
+            // Si une tâche précédente a été terminée automatiquement, previousTaskEndTime est défini
+            // et l'heure est déjà affichée dans A3 par addToDisplayedResults ou la logique de fin.
 
-            // 5. Afficher les boutons de contrôle
+            // 4. Afficher les boutons de contrôle
             const finBtn = document.querySelector('.fin-btn');
             const pauseBtn = document.querySelector('.pause-btn');
             if (finBtn) finBtn.style.display = 'block';
             if (pauseBtn) pauseBtn.style.display = 'block';
 
-            // 6. Charger automatiquement les endroits à contrôler depuis le sheet (C2)
+            // 5. Charger automatiquement les endroits à contrôler depuis le sheet (C2)
             loadControlLocationsFromSheet(selectedLocale);
-            // 7. Charger les contrôles pour C3
+
+            // 6. Charger les contrôles pour C3
             loadC3Controls(selectedLocale);
-            // --- Fin de la logique modifiée ---
+            // --- Fin du démarrage de la nouvelle tâche ---
         } else if (cellId === 'a4' || cellId === 'b4' || cellId === 'c4' || cellId === 'd4') {
+            // Ancienne logique pour A4, B4, C4, D4 (si vous voulez garder leur comportement spécifique)
             const selectedText = item.querySelector('.dropdown-item-content').textContent.trim();
             content.textContent = selectedText;
             content.classList.remove('placeholder');
+            cell.classList.remove('text-green', 'text-red'); // Retirer les couleurs si nécessaire
+            if (selectedText === '1') {
+                cell.classList.add('text-green');
+            } else if (selectedText === '2' || selectedText === '3') {
+                cell.classList.add('text-red');
+            }
             updateResults();
-            displayCurrentResults();
             // Vérifier si toutes les cases facultatives ont "Vide" comme valeur par défaut
             checkOptionalCellsDefault();
+            checkCompletion(); // Vérifier si la tâche est complète après la sélection
         }
         item.closest('.dropdown-menu').classList.remove('show');
         activeMenu = null;
     });
     // Fonction pour vérifier les cases facultatives
     function checkOptionalCellsDefault() {
-        const optionalCells = ['a4', 'b4', 'c4', 'd4'];
+        // const optionalCells = ['a4', 'b1', 'b2', 'b3', 'b4', 'c1', 'c4', 'd2', 'd3', 'd4']; // Ancien
+        const optionalCells = ['a4', 'b4', 'c4', 'd4']; // Cases optionnelles utilisées uniquement
         let allEmpty = true;
         optionalCells.forEach(cellId => {
             const cell = document.getElementById(cellId);
@@ -934,13 +1197,12 @@ document.addEventListener('DOMContentLoaded', function() {
     updateA1Menu();
     updateD1MenuWithDefault();
     loadResults();
-    displayCurrentResults();
-    loadTaskHistory();
-    displayTaskHistory();
+    loadTaskHistory(); // Charge displayedTaskResults et taskHistory
     showA1Buttons();
     initializeOptionalCellMenus(); // Initialiser les menus des cases facultatives
     // Initialiser les cases facultatives avec "Vide" par défaut
-    const optionalCells = ['a4', 'b4', 'c4', 'd4'];
+    // const optionalCells = ['a4', 'b1', 'b2', 'b3', 'b4', 'c1', 'c4', 'd2', 'd3', 'd4']; // Ancien
+    const optionalCells = ['a4', 'b4', 'c4', 'd4']; // Cases optionnelles utilisées uniquement
     optionalCells.forEach(cellId => {
         const cell = document.getElementById(cellId);
         const content = cell.querySelector('.cell-content');
@@ -949,4 +1211,8 @@ document.addEventListener('DOMContentLoaded', function() {
             content.classList.remove('placeholder');
         }
     });
+    // --- NOUVEAU : Afficher le tableau au chargement initial ---
+    renderTaskResultsTable();
+    // --- NOUVEAU : Afficher la date au chargement initial ---
+    updateCurrentDate();
 });
